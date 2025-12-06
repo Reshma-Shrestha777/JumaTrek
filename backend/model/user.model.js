@@ -13,6 +13,10 @@ const userSchema = new mongoose.Schema({
         type:String,
         required:true
     },
+    contact:{
+    type: String,
+    required: true
+    },
     listing:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Listing"
