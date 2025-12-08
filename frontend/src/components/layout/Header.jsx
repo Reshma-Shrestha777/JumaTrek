@@ -30,6 +30,7 @@ const Header = () => {
             <li><a href="#seasons" className="nav-link" onClick={() => mobileMenuOpen && setMobileMenuOpen(false)}>Seasons</a></li>
             <li><a href="#about" className="nav-link" onClick={() => mobileMenuOpen && setMobileMenuOpen(false)}>About</a></li>
             <li><a href="#contact" className="nav-link" onClick={() => mobileMenuOpen && setMobileMenuOpen(false)}>Contact</a></li>
+            <li><Link to="/project-structure" className="nav-link" onClick={() => mobileMenuOpen && setMobileMenuOpen(false)}>Project</Link></li>
             <li><Link to="/booking" className="btn btn-book" onClick={() => mobileMenuOpen && setMobileMenuOpen(false)}>
               <i className="fas fa-calendar-alt"></i> Book Now
             </Link></li>

@@ -303,12 +303,6 @@ body {
   gap: 12px;
 }
 
-.trip-rating {
-  color: #fbbf24;
-  font-size: 0.875rem;
-  margin: 8px 0;
-}
-
 /* Stats */
 .stats {
   background: var(--brand);
@@ -499,39 +493,6 @@ body {
 .season-icon {
   font-size: 2rem;
   margin-bottom: 12px;
-}
-
-/* Testimonials */
-.testimonials-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-
-.testimonial {
-  background: white;
-  padding: 32px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-}
-
-.testimonial-author {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 24px;
-}
-
-.testimonial-avatar {
-  width: 48px;
-  height: 48px;
-  background: var(--cream);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  color: var(--brand);
 }
 
 /* About Section */
@@ -741,7 +702,6 @@ footer {
   .gear-categories,
   .difficulty-comparison,
   .seasonal-calendar,
-  .testimonials-grid,
   .footer-content {
     grid-template-columns: 1fr;
   }
@@ -1136,16 +1096,6 @@ footer {
   text-decoration: underline;
 }
 
-.trek-rating {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 16px 0;
-}
-
-.trek-rating .fas.fa-star.filled {
-  color: #fbbf24;
-}
 
 .trek-meta {
   display: flex;
@@ -1484,3 +1434,5 @@ footer {
     margin-bottom: 12px;
   }
 }
+
+

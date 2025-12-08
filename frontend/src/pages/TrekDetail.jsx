@@ -20,8 +20,6 @@ const TrekDetail = () => {
       season: "Spring (Mar-May) & Autumn (Sep-Nov)",
       groupSize: "2-12 people",
       price: 240000,
-      rating: 4.8,
-      reviews: 203,
       highlights: [
         "Spectacular views of Mount Everest",
         "Visit to Tengboche Monastery",
@@ -99,12 +97,6 @@ const TrekDetail = () => {
             <Link to="/all-treks">All Treks</Link> / <Link to={`/region/${trek.region.toLowerCase()}`}>{trek.region}</Link> / <span>{trek.title}</span>
           </div>
           <h1>{trek.title}</h1>
-          <div className="trek-rating">
-            {[...Array(5)].map((_, i) => (
-              <i key={i} className={`fas fa-star ${i < Math.floor(trek.rating) ? 'filled' : ''}`}></i>
-            ))}
-            <span>{trek.rating} ({trek.reviews} reviews)</span>
-          </div>
           <div className="trek-meta">
             <span><i className="fas fa-calendar-alt"></i> {trek.duration} days</span>
             <span><i className="fas fa-signal"></i> {trek.difficulty}</span>
@@ -154,12 +146,6 @@ const TrekDetail = () => {
           onClick={() => setActiveTab('gallery')}
         >
           <i className="fas fa-images"></i> Gallery
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'reviews' ? 'active' : ''}`}
-          onClick={() => setActiveTab('reviews')}
-        >
-          <i className="fas fa-star"></i> Reviews
         </button>
       </div>
 

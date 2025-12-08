@@ -18,12 +18,6 @@ const TripsGrid = () => {
             <div className="trip-content">
               <h3 className="trip-title">{trek.title}</h3>
               <p className="muted">{trek.description}</p>
-              <div className="trip-rating">
-                {[...Array(5)].map((_, i) => (
-                  <i key={i} className="fas fa-star"></i>
-                ))}
-                {trek.rating} ({trek.reviews} reviews)
-              </div>
               <div className="trip-meta">
                 <i className="fas fa-calendar-alt"></i> {trek.duration} days
                 <i className="fas fa-signal"></i> {trek.difficulty}

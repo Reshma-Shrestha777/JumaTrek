@@ -231,7 +231,6 @@ const AllTreks = () => {
                     <div className="trek-meta">
                       <span><i className="fas fa-calendar-alt"></i> {trek.duration} days</span>
                       <span><i className="fas fa-signal"></i> {trek.difficulty}</span>
-                      <span><i className="fas fa-star"></i> {trek.rating}</span>
                     </div>
                     <div className="trek-highlights">
                       {trek.highlights.slice(0, 3).map((highlight, idx) => (

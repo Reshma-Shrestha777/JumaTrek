@@ -94,7 +94,7 @@ const Hero = () => {
 
       <aside>
         <div className="featured-trip">
-          <h3><i className="fas fa-star"></i> Featured Adventure</h3>
+          <h3>Featured Adventure</h3>
           <img src={featuredTrek.image} alt={featuredTrek.title}/>
           <div className="trip-info">
             <div className="trip-details">
@@ -102,12 +102,6 @@ const Hero = () => {
               <div className="trip-meta">
                 <i className="fas fa-calendar-alt"></i> {featuredTrek.duration} days
                 <i className="fas fa-signal"></i> {featuredTrek.difficulty}
-              </div>
-              <div className="trip-rating">
-                {[...Array(5)].map((_, i) => (
-                  <i key={i} className="fas fa-star"></i>
-                ))}
-                {featuredTrek.rating} ({featuredTrek.reviews} reviews)
               </div>
             </div>
             <div className="price">${featuredTrek.price}</div>
