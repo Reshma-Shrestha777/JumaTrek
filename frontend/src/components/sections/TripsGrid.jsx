@@ -2,6 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { trekData } from '../../data/trekData';
 
+// Format price to USD with comma separators
+const formatPrice = (priceInUsd) => {
+  return `$${priceInUsd.toLocaleString()}`;
+};
+
 const TripsGrid = () => {
   return (
     <section id="trips" className="section">
@@ -24,7 +29,7 @@ const TripsGrid = () => {
                 <i className="fas fa-map-marker-alt"></i> {trek.region}
               </div>
               <div className="trip-details">
-                <div className="price">Rs {trek.price.toLocaleString()}</div>
+                <div className="price">{formatPrice(trek.price)}</div>
                 <Link to={`/booking?trek=${encodeURIComponent(trek.title)}`} className="btn">
                   <i className="fas fa-arrow-right"></i> Book Now
                 </Link>

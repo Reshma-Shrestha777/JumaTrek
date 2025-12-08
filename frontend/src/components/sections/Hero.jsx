@@ -104,7 +104,7 @@ const Hero = () => {
                 <i className="fas fa-signal"></i> {featuredTrek.difficulty}
               </div>
             </div>
-            <div className="price">${featuredTrek.price}</div>
+            <div className="price">${featuredTrek.price.toLocaleString()}</div>
           </div>
           <Link to={`/booking?trek=${encodeURIComponent(featuredTrek.title)}`} className="btn" style={{ width: '100%', marginTop: '16px' }}>
             <i className="fas fa-arrow-right"></i> Book This Trek

@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 
+// Format price to USD with comma separators
+const formatPrice = (priceInUsd) => {
+  return `$${priceInUsd.toLocaleString()}`;
+};
+
 const TrekDetail = () => {
   const { id } = useParams();
   const [trek, setTrek] = useState(null);
@@ -19,7 +24,7 @@ const TrekDetail = () => {
       region: "Khumbu",
       season: "Spring (Mar-May) & Autumn (Sep-Nov)",
       groupSize: "2-12 people",
-      price: 240000,
+      price: 1805,
       highlights: [
         "Spectacular views of Mount Everest",
         "Visit to Tengboche Monastery",
@@ -55,15 +60,147 @@ const TrekDetail = () => {
         "https://images.unsplash.com/photo-1551632811-561732d1e306",
         "https://images.unsplash.com/photo-1528181304800-259b08848526"
       ]
+    },
+    2: {
+      id: 2,
+      title: "Annapurna Circuit",
+      description: "The Annapurna Circuit is a trek within the Annapurna mountain range of central Nepal. The total length of the route varies between 160–230 km, depending on where motor transportation is used and where the trek ends.",
+      duration: 12,
+      difficulty: "Moderate",
+      maxAltitude: "5,416m (Thorong La Pass)",
+      region: "Annapurna",
+      season: "Spring (Mar-May) & Autumn (Sep-Nov)",
+      groupSize: "2-12 people",
+      price: 1353,
+      highlights: [
+        "Thorong La Pass",
+        "Muktinath Temple",
+        "Manang Valley",
+        "Hot springs at Tatopani",
+        "Poon Hill sunrise view"
+      ],
+      itinerary: [
+        { day: 1, title: "Drive to Besisahar and trek to Khudi", description: "Scenic drive and easy trek to Khudi" },
+        { day: 2, title: "Trek to Bahundanda", description: "Walk through rice fields and small villages" },
+        // ... more days
+      ],
+      includes: [
+        "All meals during trek",
+        "Experienced English-speaking guide",
+        "Porter service",
+        "Accommodation in tea houses",
+        "All necessary permits",
+        "Transportation as per itinerary"
+      ],
+      excludes: [
+        "International flights",
+        "Nepal visa fee",
+        "Travel insurance",
+        "Personal expenses",
+        "Tips for guide and porter"
+      ],
+      gallery: [
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+        "https://images.unsplash.com/photo-1551632811-561732d1e306",
+        "https://images.unsplash.com/photo-1528181304800-259b08848526"
+      ]
+    },
+    3: {
+      id: 3,
+      title: "Langtang Valley Trek",
+      description: "The Langtang Valley Trek is a beautiful and less crowded trek in the Langtang region, offering stunning views of the Langtang range and an opportunity to experience Tamang culture.",
+      duration: 8,
+      difficulty: "Moderate",
+      maxAltitude: "4,984m (Tserko Ri)",
+      region: "Langtang",
+      season: "Spring (Mar-May) & Autumn (Sep-Nov)",
+      groupSize: "2-12 people",
+      price: 902,
+      highlights: [
+        "Langtang National Park",
+        "Kyanjin Gompa",
+        "Tserko Ri",
+        "Tamang culture and hospitality",
+        "Cheese factory visit"
+      ],
+      itinerary: [
+        { day: 1, title: "Drive to Syabrubesi", description: "Scenic drive from Kathmandu to Syabrubesi" },
+        { day: 2, title: "Trek to Lama Hotel", description: "Walk through forests and along the Langtang River" },
+        // ... more days
+      ],
+      includes: [
+        "All meals during trek",
+        "Experienced English-speaking guide",
+        "Porter service",
+        "Accommodation in tea houses",
+        "All necessary permits",
+        "Transportation as per itinerary"
+      ],
+      excludes: [
+        "International flights",
+        "Nepal visa fee",
+        "Travel insurance",
+        "Personal expenses",
+        "Tips for guide and porter"
+      ],
+      gallery: [
+        "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429",
+        "https://images.unsplash.com/photo-1551632811-561732d1e306",
+        "https://images.unsplash.com/photo-1528181304800-259b08848526"
+      ]
+    },
+    45: {
+      id: 45,
+      title: "Upper Mustang Trek",
+      description: "The Upper Mustang Trek takes you to the hidden kingdom of Lo Manthang, a remote region in the northern part of Nepal that was once an independent kingdom with its own culture and traditions.",
+      duration: 14,
+      difficulty: "Moderate",
+      maxAltitude: "4,200m (Lo La Pass)",
+      region: "Mustang",
+      season: "Spring (Mar-May) & Autumn (Sep-Nov)",
+      groupSize: "2-12 people",
+      price: 2105,
+      highlights: [
+        "The walled city of Lo Manthang",
+        "Ancient Buddhist monasteries",
+        "Tibetan culture and traditions",
+        "Stunning desert landscapes",
+        "Kali Gandaki Valley"
+      ],
+      itinerary: [
+        { day: 1, title: "Fly to Pokhara", description: "Scenic flight to Pokhara and preparation day" },
+        { day: 2, title: "Fly to Jomsom and trek to Kagbeni", description: "Flight to Jomsom and short trek to Kagbeni" },
+        // ... more days
+      ],
+      includes: [
+        "All meals during trek",
+        "Experienced English-speaking guide",
+        "Porter service",
+        "Accommodation in tea houses",
+        "Special restricted area permit",
+        "All necessary permits",
+        "Domestic flights"
+      ],
+      excludes: [
+        "International flights",
+        "Nepal visa fee",
+        "Travel insurance",
+        "Personal expenses",
+        "Tips for guide and porter"
+      ],
+      gallery: [
+        "https://images.unsplash.com/photo-1549880338-65ddcdfd017b",
+        "https://images.unsplash.com/photo-1551632811-561732d1e306",
+        "https://images.unsplash.com/photo-1528181304800-259b08848526"
+      ]
     }
-    // ... other trek details
   };
 
   useEffect(() => {
     // Simulate API call
     setTimeout(() => {
-      const trekData = trekDetails[id] || trekDetails[1];
-      setTrek(trekData);
+      const trekData = trekDetails[id];
+      setTrek(trekData || null);
       setLoading(false);
     }, 500);
   }, [id]);
@@ -105,7 +242,7 @@ const TrekDetail = () => {
           </div>
           <div className="trek-price">
             <span className="price-label">Starting from</span>
-            <span className="price-amount">Rs {trek.price.toLocaleString()}</span>
+            <span className="price-amount">{formatPrice(trek.price)}</span>
             <span className="price-person">per person</span>
           </div>
           <div className="trek-actions">
