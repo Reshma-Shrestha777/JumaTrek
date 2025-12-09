@@ -4,6 +4,7 @@ import connectDb from "./config/db.js";
 import authRouter from "./routes/auth.route.js";
 import cookieParser from "cookie-parser";
 import bookingRouter from "./routes/booking.route.js";
+import listingRouter from "./routes/listing.route.js";
 dotenv.config();
 
 const PORT = process.env.PORT || 6000
@@ -14,6 +15,8 @@ app.use(cookieParser())
 
 app.use("/api/auth", authRouter)
 app.use("/api/booking", bookingRouter)
+app.use("/api/listing", listingRouter)
+
 
 app.get("/",(req,res)=>{
     res.send("hello from server")
