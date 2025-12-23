@@ -24,6 +24,11 @@ const userSchema = new mongoose.Schema({
     booking:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Booking"
+    },
+    role: {
+        type: String,
+        enum: ["User", "Admin"],
+        default: "User"
     }
 },{timestamps:true})
 

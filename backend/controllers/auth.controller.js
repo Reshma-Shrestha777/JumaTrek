@@ -10,7 +10,7 @@ export const signUp=async (req,res) => {
             return res.status(400).json({message:"User already exist!"})
         }
         let hashPassword = await bcrypt.hash(password,10)
-        let user = await User.create({name , email , contact , password:hashPassword})
+        let user = await User.create({name , email , contact , password:hashPassword, role: "User"})
         let token = await genToken(user._id)
         res.cookie("token",token,{
             httpOnly:true,
