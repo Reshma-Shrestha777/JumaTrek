@@ -39,8 +39,8 @@ const TripsGrid = () => {
         ))}
       </div>
       
-      <div style={{ textAlign: 'center', marginTop: '40px' }}>
-        <Link to="/all-treks" className="btn" style={{ padding: '16px 32px' }}>
+      <div className="text-center mt-40">
+        <Link to="/all-treks" className="btn btn-lg">
           <i className="fas fa-mountain"></i> View All 45+ Trek Routes
         </Link>
       </div>

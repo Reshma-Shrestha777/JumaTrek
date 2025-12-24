@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import UserProfile from '../user/UserProfile';
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -8,6 +10,7 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isHomePage = location.pathname === '/';
+  const { user } = useAuth();
 
   // Handle scroll to update active section
   useEffect(() => {
@@ -100,32 +103,55 @@ const Header = () => {
     <header id="header">
       <div className="container topbar">
         <div className="brand" onClick={scrollToTop} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {!logoError ? (
-            <img 
-              src={getLogoPath()}
-              alt="Juma Trek Logo" 
-              style={{ height: '50px', width: 'auto' }}
-              onError={handleLogoError}
-            />
-          ) : (
-            <div className="logo-fallback" style={{
-              height: '50px',
-              width: '50px',
-              backgroundColor: '#4a6fa5',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              fontWeight: 'bold',
-              fontSize: '18px'
-            }}>
-              JT
-            </div>
-          )}
+          <div style={{
+            width: '60px',
+            height: '60px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '8px',
+            overflow: 'hidden',
+            flexShrink: 0
+          }}>
+            {!logoError ? (
+              <img 
+                src={getLogoPath()}
+                alt="JUMA TREK Logo"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
+                }}
+                onError={handleLogoError}
+              />
+            ) : (
+              <div className="logo-fallback" style={{
+                width: '100%',
+                height: '100%',
+                backgroundColor: '#4a6fa5',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '18px'
+              }}>
+                JT
+              </div>
+            )}
+          </div>
           <div>
-            <div className="brand-text">JUMA TREK</div>
-            <div className="brand-tagline">Walk in Nepal</div>
+            <div className="brand-text" style={{ 
+              color: '#1a202c',
+              fontSize: '24px',
+              fontWeight: 'bold',
+              lineHeight: '1.2'
+            }}>JUMA TREK</div>
+            <div className="brand-tagline" style={{ 
+              color: '#4A5568',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}>Walk in Nepal</div>
           </div>
         </div>
         <nav id="nav" className={mobileMenuOpen ? 'mobile-open' : ''}>
@@ -142,13 +168,17 @@ const Header = () => {
               </li>
             ))}
             <li>
-              <Link 
-                to="/auth" 
-                className="btn btn-auth" 
-                onClick={() => mobileMenuOpen && setMobileMenuOpen(false)}
-              >
-                <i className="fas fa-user"></i> Login / Sign Up
-              </Link>
+              {user ? (
+                <UserProfile />
+              ) : (
+                <Link 
+                  to="/auth" 
+                  className="btn btn-auth" 
+                  onClick={() => mobileMenuOpen && setMobileMenuOpen(false)}
+                >
+                  <i className="fas fa-user"></i> Login / Sign Up
+                </Link>
+              )}
             </li>
           </ul>
         </nav>
@@ -183,7 +213,7 @@ const Header = () => {
 
         .brand-tagline {
           font-size: 12px;
-          color: #7f8c8d;
+          color: #1f3638ff;
           font-weight: 500;
           letter-spacing: 0.5px;
         }
@@ -220,22 +250,29 @@ const Header = () => {
         }
 
         .btn-auth {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
           padding: 8px 16px;
           border-radius: 6px;
           text-decoration: none;
           font-weight: 500;
           transition: all 0.3s ease;
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          background-color: #2c3e50;
+          background-color: #4a6fa5;
           color: white;
-          border: 1px solid #2c3e50;
+          border: none;
+          cursor: pointer;
+          font-size: 14px;
         }
 
         .btn-auth:hover {
-          background-color: #e74c3c;
-          border-color: #e74c3c;
+          background-color: #3a5a80;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+          transform: translateY(-1px);
+        }
+
+        .btn-auth i {
+          font-size: 14px;
         }
 
         @media (max-width: 768px) {

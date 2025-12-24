@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { authService } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 import './AuthForm.css';
 
 const AuthForm = ({ onAuthSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -69,15 +71,20 @@ const AuthForm = ({ onAuthSuccess }) => {
     setError('');
 
     try {
-      let response;
-      if (isLogin) {
-        response = await authService.login(email, password);
-        toast.success('Login successful! Welcome back!');
-      } else {
-        response = await authService.signup({ name, email, contactNo, password });
-        toast.success('Account created successfully! Welcome to Juma Trek!');
-      }
+      const response = isLogin 
+        ? await authService.login({ email, password })
+        : await authService.register({ name, email, contactNo, password });
+
+      // Call the login function from AuthContext
+      login(response.user);
+
+      // Store the token in local storage
+      localStorage.setItem('token', response.token);
+
+      // Notify success
+      toast.success(isLogin ? 'Login successful!' : 'Registration successful!');
       
+      // Call the success callback
       if (onAuthSuccess) {
         onAuthSuccess();
       } else {

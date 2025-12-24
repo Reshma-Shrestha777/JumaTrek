@@ -52,8 +52,8 @@ const Testimonials = () => {
         ))}
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: '40px' }}>
-        <button className="btn" onClick={openTestimonialForm} style={{ padding: '16px 32px' }}>
+      <div className="text-center mt-40">
+        <button className="btn btn-lg" onClick={openTestimonialForm}>
           <i className="fas fa-plus-circle"></i> Add Your Experience
         </button>
       </div>

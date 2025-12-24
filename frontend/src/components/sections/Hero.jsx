@@ -67,7 +67,7 @@ const Hero = () => {
                 </div>
               ))}
             </div>
-            <button className="btn" type="submit" style={{ width: '100%' }}>
+            <button className="btn full-width" type="submit">
               <i className="fas fa-search"></i> Find Your Adventure
             </button>  
           </form>
@@ -89,7 +89,7 @@ const Hero = () => {
             </div>
             <div className="price">${featuredTrek.price.toLocaleString()}</div>
           </div>
-          <Link to={`/booking?trek=${encodeURIComponent(featuredTrek.title)}`} className="btn" style={{ width: '100%', marginTop: '16px' }}>
+          <Link to={`/booking?trek=${encodeURIComponent(featuredTrek.title)}`} className="btn full-width mt-16">
             <i className="fas fa-arrow-right"></i> Book This Trek
           </Link>
         </div>

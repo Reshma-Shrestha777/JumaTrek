@@ -48,8 +48,8 @@ const Stats = () => {
 
   return (
     <section className="stats-section">
-      <h2 className="section-title" style={{ color: '#1a1a2e', marginBottom: '1rem', textAlign: 'center' }}>Our Achievements</h2>
-      <p className="section-subtitle" style={{ color: '#4b5563', maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
+      <h2 className="stats-title">Our Achievements</h2>
+      <p className="stats-subtitle">
         Proudly serving adventurers with excellence and passion
       </p>
       <div className="stats-container">

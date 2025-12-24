@@ -12,14 +12,42 @@ const Footer = () => {
       <div className="container">
         <div className="footer-content">
           <div>
-            <div className="footer-brand">
-              <div className="logo">JT</div>
+            <div className="footer-brand" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div style={{
+                width: '60px',
+                height: '60px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '8px',
+                overflow: 'hidden'
+              }}>
+                <img 
+                  src="/src/assets/images/logo.png" 
+                  alt="JUMA TREK Logo" 
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover'
+                  }}
+                />
+              </div>
               <div>
-                <div className="brand-text" style={{ color: 'white' }}>JUMA TREK</div>
-                <div className="brand-tagline">Walk in Nepal</div>
+                <div className="brand-text" style={{ 
+                  color: '#1a202c',
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  lineHeight: '1.2'
+                }}>JUMA TREK</div>
+                <div className="brand-tagline" style={{ 
+                  color: '#0c1627ff',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}>Walk in Nepal</div>
               </div>
             </div>
-            <div className="footer-desc">
+            
+            <div className="footer-desc" style={{ marginTop: '20px' }}>
               Experience Nepal's majestic Himalayas with expert local guides. We create authentic, responsible adventures that benefit local communities while providing unforgettable memories.
             </div>
             <div className="footer-social">

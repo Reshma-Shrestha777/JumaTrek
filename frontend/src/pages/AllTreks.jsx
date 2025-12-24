@@ -202,27 +202,8 @@ const AllTreks = () => {
             </div>
 
             <button 
-              className="btn btn-secondary" 
-              onClick={clearFilters} 
-              style={{
-                width: '100%',
-                marginTop: '16px',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: '#f0f0f0',
-                color: '#333',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                transition: 'all 0.2s ease',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e0e0e0'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
+              className="btn btn-outline" 
+              onClick={clearFilters}
             >
               <i className="fas fa-times"></i> Clear Filters
             </button>
@@ -254,29 +235,12 @@ const AllTreks = () => {
 
           {filteredTreks.length === 0 ? (
             <div className="no-results">
-              <i className="fas fa-mountain" style={{ fontSize: '48px', color: 'var(--muted)', marginBottom: '16px' }}></i>
+              <i className="fas fa-mountain text-muted-large mb-16"></i>
               <h3>No Treks Found</h3>
               <p>Try adjusting your filters to find more trekking options.</p>
               <button 
-                className="btn" 
+                className="btn btn-accent" 
                 onClick={clearFilters}
-                style={{
-                  padding: '12px 24px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  backgroundColor: '#4a6fa5',
-                  color: 'white',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  transition: 'all 0.2s ease',
-                  boxShadow: '0 2px 8px rgba(74, 111, 165, 0.3)'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#3a5a8f'}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4a6fa5'}
               >
                 <i className="fas fa-filter"></i> Clear All Filters
               </button>
@@ -307,53 +271,14 @@ const AllTreks = () => {
                       <div className="trek-price">{formatPrice(trek.price)}</div>
                       <div className="trek-actions">
                         <Link 
-                          to={`/trek/${trek.id}`} 
-                          className="btn btn-outline"
-                          style={{
-                            padding: '8px 16px',
-                            borderRadius: '6px',
-                            border: '2px solid #4a6fa5',
-                            backgroundColor: 'transparent',
-                            color: '#4a6fa5',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            textDecoration: 'none',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            transition: 'all 0.2s ease'
-                          }}
-                          onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = '#4a6fa5';
-                            e.currentTarget.style.color = 'white';
-                          }}
-                          onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                            e.currentTarget.style.color = '#4a6fa5';
-                          }}
+                          to={`/trek/${trek.id}`}
+                          className="btn-trek-details"
                         >
                           <i className="fas fa-info-circle"></i> Details
                         </Link>
                         <Link 
-                          to={`/booking?trek=${encodeURIComponent(trek.title)}`} 
-                          className="btn"
-                          style={{
-                            padding: '8px 16px',
-                            borderRadius: '6px',
-                            border: 'none',
-                            backgroundColor: '#4a6fa5',
-                            color: 'white',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            textDecoration: 'none',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            transition: 'all 0.2s ease',
-                            boxShadow: '0 2px 8px rgba(74, 111, 165, 0.3)'
-                          }}
-                          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#3a5a8f'}
-                          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4a6fa5'}
+                          to={`/booking?trek=${encodeURIComponent(trek.title)}`}
+                          className="btn-trek-book"
                         >
                           <i className="fas fa-calendar"></i> Book Now
                         </Link>
