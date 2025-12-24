@@ -73,23 +73,6 @@ const Hero = () => {
           </form>
         </div>
 
-        <div className="features">
-          <div className="feature">
-            <div className="feature-icon"><i className="fas fa-users"></i></div>
-            <strong>Small Groups</strong>
-            <div className="feature-desc">Max 12 participants for authentic local connections</div>
-          </div>
-          <div className="feature">
-            <div className="feature-icon"><i className="fas fa-calendar-check"></i></div>
-            <strong>Flexible Booking</strong>
-            <div className="feature-desc">Easy changes and cancellations for peace of mind</div>
-          </div>
-          <div className="feature">
-            <div className="feature-icon"><i className="fas fa-heart"></i></div>
-            <strong>Community Positive</strong>
-            <div className="feature-desc">Supporting villages and empowering local guides</div>
-          </div>
-        </div>
       </div>
 
       <aside>

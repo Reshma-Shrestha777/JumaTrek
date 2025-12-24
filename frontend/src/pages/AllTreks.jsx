@@ -51,7 +51,7 @@ const AllTreks = () => {
     region: '',
     difficulty: '',
     duration: '',
-    minPrice: '',
+    minPrice: '250',
     maxPrice: ''
   });
 
@@ -60,6 +60,32 @@ const AllTreks = () => {
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
+    
+    // Handle price inputs
+    if (name === 'minPrice' || name === 'maxPrice') {
+      // Remove any non-digit characters and ensure it's not negative
+      const numericValue = value.replace(/\D/g, '');
+      if (numericValue === '') {
+        setFilters({ ...filters, [name]: '' });
+        return;
+      }
+      
+      // For minPrice, ensure it's at least 250
+      if (name === 'minPrice' && parseInt(numericValue, 10) < 250) {
+        setFilters({ ...filters, minPrice: '250' });
+        return;
+      }
+      
+      // For maxPrice, ensure it's not negative
+      if (name === 'maxPrice' && numericValue.startsWith('-')) {
+        return;
+      }
+      
+      setFilters({ ...filters, [name]: numericValue });
+      applyFilters({ ...filters, [name]: numericValue });
+      return;
+    }
+    
     const newFilters = {
       ...filters,
       [name]: value
@@ -160,6 +186,7 @@ const AllTreks = () => {
                   name="minPrice" 
                   placeholder="Min" 
                   value={filters.minPrice}
+                  min="250"
                   onChange={handleFilterChange}
                 />
                 <span>to</span>
@@ -168,6 +195,7 @@ const AllTreks = () => {
                   name="maxPrice" 
                   placeholder="Max" 
                   value={filters.maxPrice}
+                  min="0"
                   onChange={handleFilterChange}
                 />
               </div>
@@ -222,15 +250,6 @@ const AllTreks = () => {
         <div className="treks-grid-container">
           <div className="treks-header">
             <h3>Showing {filteredTreks.length} of {allTrekData.length} Treks</h3>
-            <div className="sort-options">
-              <select>
-                <option>Sort by: Popularity</option>
-                <option>Sort by: Price (Low to High)</option>
-                <option>Sort by: Price (High to Low)</option>
-                <option>Sort by: Duration</option>
-                <option>Sort by: Difficulty</option>
-              </select>
-            </div>
           </div>
 
           {filteredTreks.length === 0 ? (

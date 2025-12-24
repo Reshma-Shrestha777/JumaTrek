@@ -11,7 +11,7 @@ const Training = () => {
       <div className="training-steps">
         <div className="training-step">
           <div className="step-number">1</div>
-          <h3>Physical Conditioning</h3>
+          <h3 className="trained">Physical Conditioning</h3>
           <p className="muted">Build your endurance with a 2-3 month training plan including cardio, strength training, and hiking with a loaded backpack.</p>
           <ul style={{ marginTop: '16px', paddingLeft: '20px' }}>
             <li>Cardio: 3-4 times per week (running, cycling, swimming)</li>
@@ -22,7 +22,7 @@ const Training = () => {
         
         <div className="training-step">
           <div className="step-number">2</div>
-          <h3>Altitude Preparation</h3>
+          <h3 className="trained">Altitude Preparation</h3>
           <p className="muted">Understand and prepare for high-altitude trekking with proper acclimatization techniques.</p>
           <ul style={{ marginTop: '16px', paddingLeft: '20px' }}>
             <li>Climb high, sleep low principle</li>
@@ -34,7 +34,7 @@ const Training = () => {
         
         <div className="training-step">
           <div className="step-number">3</div>
-          <h3>Mental Preparation</h3>
+          <h3 className="trained">Mental Preparation</h3>
           <p className="muted">Trekking in the Himalayas requires mental resilience as much as physical strength.</p>
           <ul style={{ marginTop: '16px', paddingLeft: '20px' }}>
             <li>Set realistic expectations</li>

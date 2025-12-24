@@ -70,7 +70,7 @@ const Footer = () => {
         <div className="footer-bottom">
           <div>
             <strong>JUMA TREK</strong> &nbsp;|&nbsp; 
-            <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>© 2024 All rights reserved &nbsp;•&nbsp; Developed by Digital and Beyond Pvt.Ltd.</span>
+            <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>© 2024 All rights reserved &nbsp;•&nbsp; Developed by Digital and Beyond Pvt. Ltd.</span>
           </div>
           <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'rgba(255, 255, 255, 0.7)' }}>

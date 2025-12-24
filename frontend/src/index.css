@@ -146,19 +146,19 @@ body {
 
 /* Sections */
 .section {
-  padding: 80px 0;
+  padding: 48px 0; /* Reduced from 80px */
 }
 
 .section-header {
   text-align: center;
-  margin-bottom: 48px;
+  margin-bottom: 28.8px; /* Reduced from 48px */
 }
 
 .section-title {
   font-family: 'Playfair Display', serif;
   font-size: 2.5rem;
   color: var(--brand);
-  margin-bottom: 16px;
+  margin-bottom: 9.6px; /* Reduced from 16px */
 }
 
 .section-subtitle {
@@ -367,16 +367,26 @@ body {
 }
 
 /* Training Steps */
+
+
+
 .training-steps {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 32px;
+ 
 }
 
 .training-step {
   padding: 32px;
-  background: var(--cream);
+  background: var(--white);
   border-radius: var(--radius);
+  box-shadow: var(--shadow);
+   
+}
+
+.trained{
+
 }
 
 .step-number {
@@ -1039,6 +1049,35 @@ footer {
 .btn-outline:hover {
   background: var(--brand);
   color: white;
+}
+
+.btn-download {
+  background: #2c3e50;
+  padding: 12px 28px;
+  font-size: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-download:hover {
+  background: #e74c3c;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-download:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .no-results {

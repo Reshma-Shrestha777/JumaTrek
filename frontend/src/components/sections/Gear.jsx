@@ -8,10 +8,96 @@ const Gear = () => {
     healthSafety: ['Comprehensive first aid kit', 'Personal medications', 'High SPF sunscreen', 'Lip balm with SPF', 'Sunglasses with UV protection']
   };
 
-  const downloadGearList = () => {
-    // This would typically generate and download a PDF
-    console.log('Downloading gear checklist...');
-    alert('Gear checklist downloaded!');
+  const downloadGearList = async () => {
+    try {
+      // Dynamically import required libraries
+      const [jsPDF, html2canvas] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas')
+      ]);
+
+      // Create a temporary div to render the content
+      const tempDiv = document.createElement('div');
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.left = '-9999px';
+      tempDiv.style.top = '0';
+      tempDiv.style.width = '800px';
+      tempDiv.style.padding = '20px';
+      tempDiv.style.backgroundColor = 'white';
+      tempDiv.style.color = 'black';
+      
+      // Set the HTML content
+      tempDiv.innerHTML = `
+        <div style="font-family: Arial, sans-serif; max-width: 760px; margin: 0 auto;">
+          <h1 style="color: #2c3e50; text-align: center; font-size: 24px; margin-bottom: 5px;">JumaTrek - Essential Gear Checklist</h1>
+          <p style="text-align: center; color: #7f8c8d; margin-top: 0; margin-bottom: 20px;">
+            Your complete packing list for a safe and comfortable trek<br>
+            Generated on: ${new Date().toLocaleDateString()}
+          </p>
+          
+          ${Object.entries({
+            'FOOTWEAR': gearData.footwear,
+            'CLOTHING': gearData.clothing,
+            'EQUIPMENT': gearData.equipment,
+            'HEALTH & SAFETY': gearData.healthSafety
+          }).map(([category, items]) => `
+            <div style="margin-bottom: 20px;">
+              <h2 style="color: #3498db; border-bottom: 2px solid #3498db; padding-bottom: 5px; font-size: 18px; margin-bottom: 10px;">
+                ${category}
+              </h2>
+              <ul style="list-style-type: none; padding-left: 20px; margin: 0;">
+                ${items.map(item => `
+                  <li style="margin: 8px 0; position: relative; padding-left: 25px;">
+                    <span style="position: absolute; left: 0; color: #27ae60;">✓</span> ${item}
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+          `).join('')}
+          
+          <div style="margin-top: 40px; text-align: center; color: #7f8c8d; font-style: italic; font-size: 14px;">
+            <p>Happy Trekking! - JumaTrek Team</p>
+          </div>
+        </div>
+      `;
+
+      // Append to body and render
+      document.body.appendChild(tempDiv);
+      
+      // Use html2canvas to render the div as a canvas
+      const canvas = await html2canvas.default(tempDiv, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
+      });
+
+      // Create PDF
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF.jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const imgWidth = 190; // A4 width in mm (210 - 10mm margins on each side)
+      const pageHeight = 277; // A4 height in mm (297 - 10mm margins on top/bottom)
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      // Add image to PDF
+      pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+      
+      // Save the PDF
+      pdf.save('JumaTrek-Gear-Checklist.pdf');
+      
+      // Clean up
+      document.body.removeChild(tempDiv);
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Error generating the gear checklist. Please try again.');
+    }
   };
 
   return (
@@ -60,8 +146,12 @@ const Gear = () => {
       </div>
       
       <div style={{ textAlign: 'center', marginTop: '32px' }}>
-        <button className="btn" onClick={downloadGearList}>
-          <i className="fas fa-download"></i> Download Complete Gear Checklist
+        <button 
+          className="btn btn-download" 
+          onClick={downloadGearList}
+        >
+          <i className="fas fa-download" style={{ fontSize: '1.1em' }}></i>
+          <span>Download Complete Gear Checklist</span>
         </button>
       </div>
     </section>
