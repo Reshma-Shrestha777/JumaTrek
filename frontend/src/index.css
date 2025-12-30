@@ -8,7 +8,7 @@
   --text: #4a5568;
   --muted: #718096;
   --secondary: #e2e8f0;
-  --cream: #f7fafc;
+  --cream: #f8f4ef;
   --white: #ffffff;
   --success: #38a169;
   --warning: #d69e2e;
@@ -16,7 +16,7 @@
   --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.15);
   --radius: 8px;
-  --black: #000000;
+  --black: #978c85;
 }
 
 * {
@@ -34,10 +34,11 @@ body {
   color: var(--text);
   line-height: 1.6;
   background: var(--cream);
+  overflow-x: hidden;
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 0 20px;
 }
@@ -177,7 +178,7 @@ body {
 }
 
 .hero-badge {
-  background: var(--cream);
+  background: var(--white);
   padding: 8px 16px;
   border-radius: 20px;
   display: inline-flex;
@@ -523,7 +524,7 @@ body {
 
 /* Footer */
 footer {
-  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6)), 
+  background: linear-gradient(rgba(233, 244, 245, 0.5), rgba(0, 0, 0, 0.6)), 
               url('../src/assets/images/Header.png') center/cover no-repeat;
   color: white;
   padding: 64px 0 24px;
@@ -2632,10 +2633,278 @@ footer {
   }
 }
 
+/* New utility classes for inline styles */
+.full-width {
+  width: 100% !important;
+}
+
+.mt-16 {
+  margin-top: 16px;
+}
+
+.mt-40 {
+  margin-top: 40px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.px-16 {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.px-32 {
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+.py-8 {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.py-16 {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.py-32 {
+  padding-top: 32px;
+  padding-bottom: 32px;
+}
+
+.fs-14 {
+  font-size: 14px;
+}
+
+.fs-18 {
+  font-size: 18px;
+}
+
+.border-radius-6 {
+  border-radius: 6px;
+}
+
+.border-radius-8 {
+  border-radius: 8px;
+}
+
+.border-2-accent {
+  border: 2px solid #4a6fa5;
+}
+
+.border-none {
+  border: none;
+}
+
+.bg-accent {
+  background: var(--accent);
+}
+
+/* Icon colors */
+.icon-success {
+  color: var(--success);
+}
+
+.icon-danger {
+  color: var(--danger);
+}
+
+/* List styles */
+.ul-styled {
+  margin-top: 16px;
+  padding-left: 20px;
+}
+
+/* Stats section specific */
+.stats-title {
+  color: #1a1a2e;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.stats-subtitle {
+  color: #4b5563;
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* Trek Action Buttons */
+.trek-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.btn-trek-details,
+.btn-trek-book {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-trek-details {
+  background: white;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+}
+
+.btn-trek-details:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.btn-trek-book {
+  background: #2c3e50;
+  color: white;
+  border: 1px solid #2c3e50;
+}
+
+.btn-trek-book:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.btn-trek-details i,
+.btn-trek-book i {
+  margin-right: 6px;
+  font-size: 12px;
+}
+
+.trek-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #edf2f7;
+}
+
+.trek-price {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+/* Button styles */
+.btn-lg {
+  padding: 16px 32px;
+  font-size: 18px;
+}
+
+.btn-outline-accent {
+  border: 2px solid #4a6fa5;
+  background: transparent;
+  color: #4a6fa5;
+}
+
+.btn-outline-accent:hover {
+  background: #4a6fa5;
+  color: white;
+}
+
+/* Responsive adjustments */
 @media (max-width: 480px) {
   .gallery-container h3 {
     font-size: 24px;
   }
+
+/* Clear Filters Button */
+.btn-clear-filters {
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: none;
+  background-color: #f0f0f0;
+  color: #333;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-clear-filters:hover {
+  background-color: #e0e0e0;
+}
+
+/* No Results Button */
+.btn-no-results {
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  background-color: #4a6fa5;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(74, 111, 165, 0.3);
+  text-decoration: none;
+}
+
+.btn-no-results:hover {
+  background-color: #3a5a8f;
+}
+
+/* Trek Card Buttons */
+.trek-btn-details {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 2px solid #4a6fa5;
+  background: transparent;
+  color: #4a6fa5;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.trek-btn-details:hover {
+  background: #4a6fa5;
+  color: white;
+}
+
+.trek-btn-book {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  background: #4a6fa5;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(74, 111, 165, 0.3);
+}
+
+.trek-btn-book:hover {
+  background: #3a5a8f;
+}
   
   .gallery-grid {
     grid-template-columns: 1fr;

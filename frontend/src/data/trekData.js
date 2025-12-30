@@ -41,3 +41,6 @@ export const featuredTrek = {
   price: 1353, 
   image: "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3"
 };
+
+// Provide a backward-compatible export name expected by components
+export const treksData = trekData;

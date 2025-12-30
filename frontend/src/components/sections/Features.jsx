@@ -1,59 +1,61 @@
 import React from 'react';
+import './Features.css';
 
 const Features = () => {
+  const features = [
+    {
+      id: 1,
+      icon: 'fas fa-users',
+      title: 'Local Guides & Specialists',
+      description: 'Our network of experienced local guides share their deep knowledge, culture, and authentic connections to make your trek unforgettable.',
+      color: '#4a90e2'
+    },
+    {
+      id: 2,
+      icon: 'fas fa-heart',
+      title: 'Authentic Experiences',
+      description: 'Skip the tourist crowds and discover hidden gems. We connect you with real local communities and cultural experiences you won\'t find elsewhere.',
+      color: '#e74c3c'
+    },
+    {
+      id: 3,
+      icon: 'fas fa-lock',
+      title: 'Secure Booking & Payments',
+      description: 'Book with confidence. Our secure payment platform protects your information and ensures transparent, hassle-free transactions.',
+      color: '#27ae60'
+    },
+    {
+      id: 4,
+      icon: 'fas fa-headset',
+      title: '24/7 Support',
+      description: 'Our dedicated support team is available around the clock to help with planning, questions, or any concerns during your journey.',
+      color: '#f39c12'
+    }
+  ];
+
   return (
-    <section className="section" id="features" style={{ textAlign: 'center' }}>
-      <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
-        <div className="section-header" style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <h2 className="section-title" style={{ marginBottom: '1rem' }}>Why Choose Us</h2>
-          <p className="section-subtitle" style={{ maxWidth: '700px', margin: '0 auto', lineHeight: '1.6' }}>
-            Experience the Juma Trek difference with our unique approach to adventure travel
+    <section className="features-section">
+      <div className="container">
+        <div className="section-header">
+          <h2 className="section-title">Why Choose JumaTrek</h2>
+          <p className="section-subtitle">
+            Experience authentic treks with local expertise, safety, and community connection
           </p>
         </div>
-        
-        <div className="seasonal-calendar" style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          flexWrap: 'wrap',
-          gap: '2rem',
-          marginTop: '2rem' 
-        }}>
-          {[
-            {
-              name: 'Small Groups',
-              icon: 'fa-users',
-              color: '#10b981',
-              description: 'Max 12 participants for authentic local connections and personalized attention from our expert guides.'
-            },
-            {
-              name: 'Flexible Booking',
-              icon: 'fa-calendar-check',
-              color: '#3b82f6',
-              description: 'Easy changes and cancellations with our flexible booking policy for worry-free travel planning.'
-            },
-            {
-              name: 'Community Positive',
-              icon: 'fa-hands-helping',
-              color: '#8b5cf6',
-              description: 'Supporting local communities and empowering Nepali guides through responsible tourism practices.'
-            }
-          ].map((feature, index) => (
-            <div className="season" key={index} style={{ 
-              cursor: 'default',
-              flex: '1 1 300px',
-              maxWidth: '350px',
-              margin: '0 auto'
-            }}>
-              <div className="season-icon" style={{ color: feature.color, fontSize: '1.8rem' }}>
-                <i className={`fas ${feature.icon}`}></i>
+
+        <div className="features-grid">
+          {features.map((feature) => (
+            <div key={feature.id} className="feature-card">
+              <div className="feature-icon" style={{ backgroundColor: `${feature.color}20` }}>
+                <i className={feature.icon} style={{ color: feature.color }}></i>
               </div>
-              <div className="season-title" style={{ fontSize: '1.2rem', fontWeight: '600' }}>{feature.name}</div>
-              <div className="season-recommendation" style={{ fontSize: '0.95rem' }}>
-                {feature.description}
-              </div>
+              <h3 className="feature-title">{feature.title}</h3>
+              <p className="feature-desc">{feature.description}</p>
             </div>
           ))}
         </div>
+
+
       </div>
     </section>
   );

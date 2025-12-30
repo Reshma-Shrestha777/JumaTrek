@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { testimonialData } from '../../data/testimonialData';
+import './Testimonials.css';
 
 const Testimonials = () => {
   const [showModal, setShowModal] = useState(false);
@@ -29,53 +30,66 @@ const Testimonials = () => {
   };
 
   return (
-    <section className="testimonials section">
-      <div className="section-header">
-        <h2 className="section-title">What Our Trekkers Say</h2>
-        <p className="section-subtitle">Real experiences from adventurers who've walked Nepal's mountains with us</p>
-      </div>
-      
-      <div className="testimonials-grid">
-        {testimonialData.map(testimonial => (
-          <div className="testimonial" key={testimonial.id}>
-            <div className="testimonial-text">
-              {testimonial.text}
-            </div>
-            <div className="testimonial-author">
-              <div className="testimonial-avatar">{testimonial.initials}</div>
-              <div className="testimonial-info">
-                <strong>{testimonial.name}</strong>
-                <span>{testimonial.country} • {testimonial.trek} {testimonial.year}</span>
+    <section className="testimonials-section">
+      <div className="container">
+        <div className="section-header">
+          <h2 className="section-title">What Our Trekkers Say</h2>
+          <p className="section-subtitle">Real experiences from adventurers who've walked Nepal's mountains with us</p>
+        </div>
+        
+        <div className="testimonials-grid">
+          {testimonialData.map(testimonial => (
+            <div className="testimonial-card" key={testimonial.id}>
+              <div className="testimonial-stars">
+                {Array.from({length: 5}).map((_, i) => (
+                  <i key={i} className={`fas fa-star ${i < (testimonial.rating || 5) ? 'filled' : ''}`}></i>
+                ))}
+              </div>
+              <p className="testimonial-text">"{testimonial.text}"</p>
+              <div className="testimonial-author">
+                <div className="testimonial-avatar">
+                  {testimonial.image ? (
+                    <img src={testimonial.image} alt={testimonial.name} />
+                  ) : (
+                    testimonial.initials
+                  )}
+                </div>
+                <div className="testimonial-info">
+                  <strong className="author-name">{testimonial.name}</strong>
+                  <p className="author-details">{testimonial.country} • {testimonial.trek}</p>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      <div style={{ textAlign: 'center', marginTop: '40px' }}>
-        <button className="btn" onClick={openTestimonialForm} style={{ padding: '16px 32px' }}>
-          <i className="fas fa-plus-circle"></i> Add Your Experience
-        </button>
+        <div className="testimonials-cta">
+          <button className="btn btn--primary btn--lg" onClick={openTestimonialForm}>
+            <i className="fas fa-comment"></i> Share Your Experience
+          </button>
+        </div>
       </div>
 
       {/* Testimonial Form Modal */}
       {showModal && (
-        <div id="testimonialModal" className="modal">
-          <div className="modal-content">
+        <div className="modal-overlay" onClick={closeTestimonialModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Share Your Experience</h2>
-              <button className="modal-close" onClick={closeTestimonialModal}>&times;</button>
+              <h2>Share Your Trek Experience</h2>
+              <button className="modal-close" onClick={closeTestimonialModal}>
+                <i className="fas fa-times"></i>
+              </button>
             </div>
             <div className="modal-body">
               <form id="testimonialForm" onSubmit={submitTestimonial}>
                 <div className="form-row">
                   <div className="form-group">
                     <label>Your Name *</label>
-                    <input type="text" name="name" required />
+                    <input type="text" name="name" placeholder="Enter your name" required />
                   </div>
                   <div className="form-group">
                     <label>Your Country *</label>
-                    <input type="text" name="country" required />
+                    <input type="text" name="country" placeholder="Where are you from?" required />
                   </div>
                 </div>
                 
@@ -109,41 +123,41 @@ const Testimonials = () => {
                   <label>Your Testimonial *</label>
                   <textarea 
                     name="testimonial" 
-                    rows="6" 
+                    rows="5" 
                     required 
-                    placeholder="Tell us about your experience... What made it special? How was the guide? What surprised you?"
+                    placeholder="Tell us about your experience... What made it special?"
                   />
                 </div>
                 
                 <div className="form-group">
-                  <label>Rating</label>
-                  <div className="rating-stars">
+                  <label>Rating *</label>
+                  <div className="rating-input">
                     {[1, 2, 3, 4, 5].map(star => (
-                      <span 
+                      <button 
                         key={star}
-                        className={`star ${star <= rating ? 'active' : ''}`}
+                        type="button"
+                        className={`star-btn ${star <= rating ? 'active' : ''}`}
                         onClick={() => handleStarClick(star)}
                       >
-                        ☆
-                      </span>
+                        <i className="fas fa-star"></i>
+                      </button>
                     ))}
                   </div>
-                  <input type="hidden" name="rating" value={rating} />
                 </div>
                 
-                <div className="form-group">
+                <div className="form-group checkbox">
                   <label>
                     <input type="checkbox" name="consent" required />
-                    I consent to have my testimonial displayed on the Juma Trek website
+                    <span>I consent to have my testimonial displayed on JumaTrek</span>
                   </label>
                 </div>
                 
                 <div className="form-actions">
-                  <button type="button" className="btn btn-secondary" onClick={closeTestimonialModal}>
+                  <button type="button" className="btn btn--outline" onClick={closeTestimonialModal}>
                     Cancel
                   </button>
-                  <button type="submit" className="btn">
-                    <i className="fas fa-paper-plane"></i> Submit Testimonial
+                  <button type="submit" className="btn btn--primary">
+                    <i className="fas fa-check"></i> Submit Testimonial
                   </button>
                 </div>
               </form>

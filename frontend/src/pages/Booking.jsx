@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { bookingService, authService } from '../services/api';
 
 const Booking = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAuthenticated, loading: authLoading } = useAuth();
-
   const queryParams = new URLSearchParams(location.search);
   const trekName = queryParams.get('trek') || '';
 
@@ -24,32 +20,11 @@ const Booking = () => {
     agreeTerms: false
   });
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
   useEffect(() => {
-    if (authLoading) return;
-
-    if (!isAuthenticated) {
-      alert("You need to be logged in to book a trek.");
-      navigate('/login');
-      return;
-    }
-
-
-    if (user) {
-      setFormData(prev => ({
-        ...prev,
-        name: user.name || prev.name,
-        email: user.email || prev.email,
-        phone: user.contact || prev.phone
-      }));
-    }
-
     if (trekName) {
       setFormData(prev => ({ ...prev, trek: trekName }));
     }
-  }, [trekName, navigate, user, isAuthenticated, authLoading]);
+  }, [trekName]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -59,23 +34,11 @@ const Booking = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      await bookingService.createBooking(formData);
-      alert('Thank you for your booking request! You will receive a confirmation email shortly. Please review your details and contact if any updates are required.');
-      navigate('/');
-
-    } catch (err) {
-      console.error("Booking error:", err);
-      setError(err.toString());
-      alert(`Booking failed: ${err}`);
-    } finally {
-      setLoading(false);
-    }
+    console.log('Booking submitted:', formData);
+    alert('Thank you for your booking request! We will contact you within 24 hours to confirm.');
+    navigate('/');
   };
 
   return (
@@ -87,52 +50,51 @@ const Booking = () => {
 
       <div className="booking-container">
         <div className="booking-form">
-          {error && <div className="error-message" style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-section">
               <h3><i className="fas fa-user"></i> Personal Information</h3>
               <div className="form-row">
                 <div className="form-group">
                   <label>Full Name *</label>
-                  <input
-                    type="text"
-                    name="name"
+                  <input 
+                    type="text" 
+                    name="name" 
                     value={formData.name}
                     onChange={handleChange}
-                    required
+                    required 
                   />
                 </div>
                 <div className="form-group">
                   <label>Email Address *</label>
-                  <input
-                    type="email"
-                    name="email"
+                  <input 
+                    type="email" 
+                    name="email" 
                     value={formData.email}
                     onChange={handleChange}
-                    required
+                    required 
                   />
                 </div>
               </div>
-
+              
               <div className="form-row">
                 <div className="form-group">
                   <label>Phone Number *</label>
-                  <input
-                    type="tel"
-                    name="phone"
+                  <input 
+                    type="tel" 
+                    name="phone" 
                     value={formData.phone}
                     onChange={handleChange}
-                    required
+                    required 
                   />
                 </div>
                 <div className="form-group">
                   <label>Country *</label>
-                  <input
-                    type="text"
-                    name="country"
+                  <input 
+                    type="text" 
+                    name="country" 
                     value={formData.country}
                     onChange={handleChange}
-                    required
+                    required 
                   />
                 </div>
               </div>
@@ -143,8 +105,8 @@ const Booking = () => {
               <div className="form-row">
                 <div className="form-group">
                   <label>Selected Trek *</label>
-                  <select
-                    name="trek"
+                  <select 
+                    name="trek" 
                     value={formData.trek}
                     onChange={handleChange}
                     required
@@ -160,8 +122,8 @@ const Booking = () => {
                 </div>
                 <div className="form-group">
                   <label>Group Size *</label>
-                  <select
-                    name="groupSize"
+                  <select 
+                    name="groupSize" 
                     value={formData.groupSize}
                     onChange={handleChange}
                     required
@@ -174,17 +136,15 @@ const Booking = () => {
                   </select>
                 </div>
               </div>
-
+              
               <div className="form-group">
                 <label>Preferred Start Date *</label>
-                <input
-                  type="date"
-                  name="preferredDate"
+                <input 
+                  type="date" 
+                  name="preferredDate" 
                   value={formData.preferredDate}
                   onChange={handleChange}
-                  min={new Date().toISOString().split('T')[0]}
-
-                  required
+                  required 
                 />
               </div>
             </div>
@@ -193,8 +153,8 @@ const Booking = () => {
               <h3><i className="fas fa-comment"></i> Additional Information</h3>
               <div className="form-group">
                 <label>Special Requests or Questions</label>
-                <textarea
-                  name="message"
+                <textarea 
+                  name="message" 
                   rows="4"
                   value={formData.message}
                   onChange={handleChange}
@@ -207,9 +167,9 @@ const Booking = () => {
               <h3><i className="fas fa-credit-card"></i> Payment Method</h3>
               <div className="payment-options">
                 <label className="payment-option">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
+                  <input 
+                    type="radio" 
+                    name="paymentMethod" 
                     value="bank-transfer"
                     checked={formData.paymentMethod === 'bank-transfer'}
                     onChange={handleChange}
@@ -219,11 +179,11 @@ const Booking = () => {
                     <span>Secure international bank transfer</span>
                   </div>
                 </label>
-
+                
                 <label className="payment-option">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
+                  <input 
+                    type="radio" 
+                    name="paymentMethod" 
                     value="credit-card"
                     checked={formData.paymentMethod === 'credit-card'}
                     onChange={handleChange}
@@ -233,11 +193,11 @@ const Booking = () => {
                     <span>Pay online with secure payment gateway</span>
                   </div>
                 </label>
-
+                
                 <label className="payment-option">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
+                  <input 
+                    type="radio" 
+                    name="paymentMethod" 
                     value="paypal"
                     checked={formData.paymentMethod === 'paypal'}
                     onChange={handleChange}
@@ -253,12 +213,12 @@ const Booking = () => {
             <div className="form-section">
               <div className="terms-agreement">
                 <label>
-                  <input
-                    type="checkbox"
+                  <input 
+                    type="checkbox" 
                     name="agreeTerms"
                     checked={formData.agreeTerms}
                     onChange={handleChange}
-                    required
+                    required 
                   />
                   I agree to the <a href="#terms">Terms & Conditions</a> and <a href="#privacy">Privacy Policy</a> *
                 </label>

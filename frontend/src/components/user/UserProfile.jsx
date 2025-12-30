@@ -1,15 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {  LogOut, User as UserIcon } from 'lucide-react';
+import { User, LogOut, User as UserIcon } from 'lucide-react';
 import { authService } from '../../services/api';
 
-const UserProfile = ({ user, onLogout }) => {
-  
+const UserProfile = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
-  // const user = authService.getCurrentUser();
-  
+  const user = authService.getCurrentUser();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -43,11 +41,7 @@ const UserProfile = ({ user, onLogout }) => {
   if (!user) return null;
 
   // Get first name or use first part of email if name is not available
-  const displayName = user?.name
-    ? user.name.split(' ')[0]
-    : user?.email
-    ? user.email.split('@')[0]
-    : 'User';
+  const displayName = user.name ? user.name.split(' ')[0] : user.email.split('@')[0];
 
   return (
     <div className="user-profile" ref={dropdownRef}>
@@ -58,7 +52,7 @@ const UserProfile = ({ user, onLogout }) => {
         aria-expanded={isOpen}
       >
         <div className="user-avatar">
-          {user?.name ? user.name.charAt(0).toUpperCase() : <UserIcon size={18} />}
+          {user.name ? user.name.charAt(0).toUpperCase() : <UserIcon size={18} />}
         </div>
         <span className="user-name">{displayName}</span>
         <svg 
@@ -79,7 +73,7 @@ const UserProfile = ({ user, onLogout }) => {
       {isOpen && (
         <div className="dropdown-menu">
           <button className="dropdown-item" onClick={handleProfile}>
-            <user size={16} />
+            <User size={16} />
             <span>Profile</span>
           </button>
           <button className="dropdown-item" onClick={handleLogout}>
@@ -89,7 +83,7 @@ const UserProfile = ({ user, onLogout }) => {
         </div>
       )}
 
-      <style >{`
+      <style jsx>{`
         .user-profile {
           position: relative;
           margin-left: 1rem;

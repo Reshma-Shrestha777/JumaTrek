@@ -1,13 +1,25 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { authService } from '../services/api';
 import AuthForm from '../components/auth/AuthForm';
 
 const AuthPage = () => {
   const navigate = useNavigate();
 
+  // Check if user is already logged in
+  useEffect(() => {
+    if (authService.isAuthenticated()) {
+      navigate('/');
+    }
+  }, [navigate]);
+
   const handleAuthSuccess = () => {
-    // Redirect to home or previous page after successful authentication
-    navigate('/');
+    // Force a state update by dispatching the authStateChange event
+    window.dispatchEvent(new Event('authStateChange'));
+    // Small delay to ensure state updates propagate
+    setTimeout(() => {
+      navigate('/', { replace: true });
+    }, 100);
   };
 
   return (

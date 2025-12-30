@@ -1,48 +1,56 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { trekData } from '../../data/trekData';
-
-// Format price to USD with comma separators
-const formatPrice = (priceInUsd) => {
-  return `$${priceInUsd.toLocaleString()}`;
-};
+import { treksData } from '../../data/trekData'; // Ensure this import is correct based on project structure
+import './TripsGrid.css';
 
 const TripsGrid = () => {
+  // Use data or fallback to kimkim-like dummy data for visual matching if needed
+  // But better to use real data from the project.
+  const featuredTrips = treksData && treksData.length > 0 ? treksData.slice(0, 6) : [
+    {
+      id: 1,
+      title: 'Discover Norway by Train & Boat - 10 Days',
+      image: 'https://images.unsplash.com/photo-1509356843151-3e7d96241e11?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80',
+      description: 'This relaxing summer itinerary checks off Norway\'s three biggest cities, traveling by train, ferry, and fjord cruise for a true Scandinavian adventure.',
+      duration: 10
+    },
+    {
+      id: 2,
+      title: 'Highlights of Italy: Venice, Florence, Rome - 14 Days',
+      image: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80',
+      description: 'Discover the sights and delights of Italy on this two-week highlights tour. Explore the floating city of Venice, the Renaissance jewel of Florence...',
+      duration: 14
+    },
+    {
+      id: 3,
+      title: 'Grand Morocco Tour: North to South - 10 Days',
+      image: 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80',
+      description: 'This 10-day itinerary features a perfect mix of culture, history, adventure, and relaxation. Explore imperial cities, mountain villages, desert landscapes...',
+      duration: 10
+    }
+  ];
+
   return (
-    <section id="trips" className="section">
-      <div className="section-header">
-        <h2 className="section-title">Popular Adventures</h2>
-        <p className="section-subtitle">Discover Nepal's most breathtaking trails with our expert local guides and small group experiences</p>
-      </div>
-      
-      <div className="trips-grid">
-        {trekData.map(trek => (
-          <div className="trip" key={trek.id}>
-            <div className="trip-badge">{trek.badge}</div>
-            <img src={trek.image} alt={trek.title}/>
-            <div className="trip-content">
-              <h3 className="trip-title">{trek.title}</h3>
-              <p className="muted">{trek.description}</p>
-              <div className="trip-meta">
-                <i className="fas fa-calendar-alt"></i> {trek.duration} days
-                <i className="fas fa-signal"></i> {trek.difficulty}
-                <i className="fas fa-map-marker-alt"></i> {trek.region}
+    <section className="trips-section">
+      <div className="container">
+        <h2 className="section-title text-start">Featured Trips</h2>
+        <div className="trips-list">
+          {featuredTrips.map((trip) => (
+            <Link to={`/trek/${trip.id}`} key={trip.id} className="trip-list-item">
+              <div className="trip-thumb">
+                <img src={trip.image} alt={trip.title} />
               </div>
-              <div className="trip-details">
-                <div className="price">{formatPrice(trek.price)}</div>
-                <Link to={`/trek/${trek.id}`} className="btn">
-                  <i className="fas fa-info-circle"></i> Show Details
-                </Link>
+              <div className="trip-info-block">
+                <h3 className="trip-item-title">{trip.title}</h3>
+                <p className="trip-item-desc">{trip.description}</p>
+                <span className="read-more">Read more...</span>
               </div>
-            </div>
-          </div>
-        ))}
-      </div>
-      
-      <div style={{ textAlign: 'center', marginTop: '40px' }}>
-        <Link to="/all-treks" className="btn" style={{ padding: '16px 32px' }}>
-          <i className="fas fa-mountain"></i> View All 45+ Trek Routes
-        </Link>
+            </Link>
+          ))}
+        </div>
+        <div className="text-center mt-8">
+          <Link to="/all-treks" className="btn btn--outline">View all trips</Link>
+        </div>
       </div>
     </section>
   );

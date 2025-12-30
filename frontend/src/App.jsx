@@ -1,32 +1,72 @@
-import React, { useState , useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useEffect } from 'react';
+
+// Import pages
 import Home from './pages/Home';
 import Booking from './pages/Booking';
 import AllTreks from './pages/AllTreks';
 import TrekDetail from './pages/TrekDetail';
+import UserProfile from './pages/UserProfile';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import AuthPage from './pages/AuthPage';
+import DestinationsPage from './pages/DestinationsPage';
 import ScrollProgress from './components/layout/ScrollProgress';
 import ScrollToTop from './components/layout/ScrollToTop';
+import AboutPage from './pages/AboutPage';
+import GuidesPage from './pages/GuidesPage';
+import ContactPage from './pages/ContactPage';
+import BlogPage from './pages/BlogPage';
+
+// Admin components
+import AdminLogin from './pages/admin/Login';
+import AdminLayout from './components/admin/AdminLayout';
+import Dashboard from './pages/admin/Dashboard';
+import TreksList from './pages/admin/treks/TreksList';
+import AddTrek from './pages/admin/treks/AddTrek';
+import EditTrek from './pages/admin/treks/EditTrek';
+import TrekDetailAdmin from './pages/admin/treks/TrekDetail';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 import './index.css';
-import { authService } from './services/api';
+import './assets/styles/globals.css';
+import './App.css';
 
-function App() {
-  const [user, setUser] = useState(null);
+function MainLayout() {
+  const location = useLocation();
+  const isHome = location.pathname === '/';
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
+  // Add a simple debug log
   useEffect(() => {
-    const fetchUser = async () => {
-      const currentUser = await authService.verifySession();
-      setUser(currentUser); // update state
-    };
-    fetchUser();
-  }, []);
+    console.log('Current route:', location.pathname);
+  }, [location]);
+
+  // Don't render header/footer for admin routes
+  if (isAdminRoute) {
+    return (
+      <Routes>
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin" element={
+          <ProtectedRoute>
+            <AdminLayout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<Dashboard />} />
+          <Route path="treks" element={<TreksList />} />
+          <Route path="treks/add" element={<AddTrek />} />
+          <Route path="treks/:id" element={<TrekDetailAdmin />} />
+          <Route path="treks/edit/:id" element={<EditTrek />} />
+          <Route path="*" element={<Navigate to="/admin" replace />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/admin/login" replace />} />
+      </Routes>
+    );
+  }
+
   return (
-    
-    <Router>
+    <>
       <ScrollToTop />
       <ScrollProgress />
       <Header />
@@ -42,20 +82,29 @@ function App() {
         pauseOnHover
         theme="light"
       />
-      <main className="container">
+      <main className={isHome ? '' : 'container'}>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<AuthPage />} />
-+         <Route path="/signup" element={<AuthPage />} />
+          <Route path="/destinations" element={<DestinationsPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/guides" element={<GuidesPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/blog" element={<BlogPage />} />
           <Route path="/booking" element={<Booking />} />
           <Route path="/all-treks" element={<AllTreks />} />
           <Route path="/trek/:id" element={<TrekDetail />} />
-           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/profile" element={<UserProfile />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
       <Footer />
-    </Router>
+    </>
   );
+}
+
+function App() {
+  return <MainLayout />;
 }
 
 export default App;

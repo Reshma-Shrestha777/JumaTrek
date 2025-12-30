@@ -78,10 +78,13 @@ const AuthForm = ({ onAuthSuccess }) => {
         toast.success('Account created successfully! Welcome to Juma Trek!');
       }
       
+      // Trigger page reload to update header with user info
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+      
       if (onAuthSuccess) {
         onAuthSuccess();
-      } else {
-        navigate('/');
       }
     } catch (err) {
       const errorMessage = err.message || 'An error occurred. Please try again.';

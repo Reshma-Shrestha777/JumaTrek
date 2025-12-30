@@ -351,7 +351,7 @@ const TrekDetail = () => {
   }
 
   return (
-    <div className="trek-detail-page">
+    <div className="trek-detail-page" style={{ padding: '2rem 4rem' }}>
       <div className="trek-hero">
         <div className="trek-hero-content">
           <div className="trek-breadcrumb">
