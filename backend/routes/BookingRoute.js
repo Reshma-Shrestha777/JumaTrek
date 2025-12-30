@@ -1,5 +1,5 @@
 import express from "express";
-import { cancelBooking, createBooking, getUserBookings, updateBookingStatus } from "../controllers/booking.controller.js";
+import { cancelBooking, createBooking, getUserBookings, updateBookingStatus } from "../controllers/BookingController.js";
 import isAuth from "../middleware/isAuth.js";
 
 const bookingRouter = express.Router();

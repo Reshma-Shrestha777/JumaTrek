@@ -1,6 +1,8 @@
-import User from "../model/user.model.js";
-import Booking from "../model/booking.model.js";
-import Listing from "../model/listing.model.js";
+import User from "../model/UserModel.js";
+import Booking from "../model/BookingModel.js";
+import Listing from "../model/ListingModel.js";
+import bcrypt from "bcryptjs";
+import genToken from "../config/token.js";
 
 export const getAllUsers = async (req, res) => {
     try {
@@ -128,5 +130,40 @@ export const getDashboardStats = async (req, res) => {
             message: "Failed to fetch dashboard stats",
             error: error.message
         });
+    }
+};
+
+export const adminLogin = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: "Admin doesn't exist!" });
+        }
+        if (user.role !== "Admin") {
+            return res.status(403).json({ message: "Access denied. Not an admin." });
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Sorry! Incorrect Password. Please Try Again" });
+        }
+        const token = await genToken(user._id);
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENVIRONMENT === "production",
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+        return res.status(200).json({
+            success: true,
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({ message: `Admin login error: ${error.message}` });
     }
 };
