@@ -2,13 +2,13 @@ import 'dotenv/config';
 import express from "express";
 import cors from "cors";
 import connectDb from "./config/db.js";
-import authRouter from "./routes/auth.route.js";
+import authRouter from "./routes/AuthRoute.js";
 import cookieParser from "cookie-parser";
-import bookingRouter from "./routes/booking.route.js";
-import listingRouter from "./routes/listing.route.js";
-import userRouter from "./routes/user.route.js";
-import wishlistRouter from './routes/wishlist.route.js';
-import adminRouter from './routes/admin.route.js';
+import bookingRouter from "./routes/BookingRoute.js";
+import listingRouter from "./routes/ListingRoute.js";
+import userRouter from "./routes/UserRoute.js";
+import wishlistRouter from './routes/WishlistRoute.js';
+import adminRouter from './routes/AdminRoute.js';
 
 
 const PORT = process.env.PORT || 5000

@@ -1,7 +1,6 @@
 import express from 'express';
-import { addToWishlist, checkWishlistStatus, getUserWishlist, removeFromWishlist } from '../controllers/wishlist.controller.js';
+import { addToWishlist, checkWishlistStatus, getUserWishlist, removeFromWishlist } from '../controllers/WishlistController.js';
 import isAuth from '../middleware/isAuth.js';
-
 
 const wishlistRouter = express.Router();
 

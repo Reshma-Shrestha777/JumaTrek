@@ -1,5 +1,5 @@
 import express from "express";
-import { createListing, getAllListings, getListingById, updateListingGallery } from "../controllers/listing.controller.js";
+import { createListing, getAllListings, getListingById, updateListingGallery } from "../controllers/ListingController.js";
 import upload from "../middleware/multer.js";
 
 

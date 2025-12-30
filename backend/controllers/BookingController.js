@@ -1,4 +1,4 @@
-import Booking from "../model/booking.model.js";
+import Booking from "../model/BookingModel.js";
 import { sendBookingConfirmationEmail } from "../utils/emailService.js";
 export const createBooking = async (req, res) => {
     try {       

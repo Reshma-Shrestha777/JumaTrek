@@ -1,8 +1,10 @@
 import express from 'express';
 import isAdmin from '../middleware/isAdmin.js';
-import { deleteUser, getAllBookings, getAllUsers, getDashboardStats, updateBookingStatusAdmin } from '../controllers/admin.controller.js';
+import { deleteUser, getAllBookings, getAllUsers, getDashboardStats, updateBookingStatusAdmin, adminLogin } from '../controllers/AdminController.js';
 
 const adminRouter = express.Router();
+
+adminRouter.post("/login", adminLogin);
 
 adminRouter.get("/dashboard", isAdmin, getDashboardStats);
 

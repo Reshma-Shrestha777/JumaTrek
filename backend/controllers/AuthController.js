@@ -1,5 +1,5 @@
 import genToken from "../config/token.js"
-import User from "../model/user.model.js"
+import User from "../model/UserModel.js"
 import bcrypt from "bcryptjs"
 
 export const signUp = async (req, res) => {
