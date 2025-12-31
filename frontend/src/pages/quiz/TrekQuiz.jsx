@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Typography, Result } from 'antd';
+import { Button, Card, Progress, Typography, Radio, Space, Result } from 'antd';
 import { 
-  ArrowLeftOutlined,
-  CheckOutlined,
-  EnvironmentOutlined,
+  ArrowLeftOutlined, 
+  CheckCircleFilled, 
+  StarFilled, 
+  CalendarOutlined, 
+  EnvironmentOutlined, 
   FireFilled,
-  TeamOutlined as TeamIcon,
-  StarFilled,
+  HomeOutlined,
   FlagFilled,
-  ThunderboltFilled
+  ThunderboltFilled,
+  CheckOutlined
 } from '@ant-design/icons';
-import './TrekQuiz.css';
 
-// Fallback icons
-const MountainOutlined = EnvironmentOutlined;
-const TreeOutlined = EnvironmentOutlined;
+// Using alternative icons for Mountain and Tree
+const MountainOutlined = EnvironmentOutlined; // Using EnvironmentOutlined as a fallback for Mountain
+const TreeOutlined = EnvironmentOutlined; // Using EnvironmentOutlined as a fallback for Tree
+const TeamOutlined = EnvironmentOutlined; // Using EnvironmentOutlined as a fallback for Team
+import './TrekQuiz.css';
 
 const { Title, Text } = Typography;
 
@@ -23,160 +26,143 @@ const questions = [
   {
     id: 1,
     question: 'What is your trekking experience level?',
-    description: 'Help us recommend the perfect trek for your skill level',
     icon: <FireFilled />,
     options: [
       { 
         value: 'beginner', 
-        label: 'Beginner',
-        description: 'First time trekker',
-        icon: '1'
+        label: 'Beginner (First time trekking)',
+        icon: <FireFilled style={{ color: '#52c41a' }} />
       },
       { 
         value: 'intermediate', 
-        label: 'Intermediate',
-        description: 'Some trekking experience',
-        icon: '2'
+        label: 'Intermediate (Some trekking experience)',
+        icon: <FireFilled style={{ color: '#faad14' }} />
       },
       { 
         value: 'advanced', 
-        label: 'Advanced',
-        description: 'Regular trekker',
-        icon: '3'
+        label: 'Advanced (Regular trekker)',
+        icon: <FireFilled style={{ color: '#fa8c16' }} />
       },
       { 
         value: 'expert', 
-        label: 'Expert',
-        description: 'Challenging treks preferred',
-        icon: '4'
+        label: 'Expert (Challenging treks preferred)',
+        icon: <FireFilled style={{ color: '#f5222d' }} />
       },
     ],
   },
   {
     id: 2,
-    question: 'How many days can you dedicate to your trek?',
-    description: 'This helps us find treks that fit your schedule',
-    icon: <span>🗓️</span>,
+    question: 'How many days can you allocate for trekking?',
+    icon: <CalendarOutlined />,
     options: [
       { 
-        value: '1-3', 
-        label: '1-3 days',
-        description: 'Short getaway',
-        icon: '1-3'
+        value: '3-5', 
+        label: '3-5 days',
+        icon: <span className="day-count">3-5</span>
       },
       { 
-        value: '4-7', 
-        label: '4-7 days',
-        description: 'Week-long adventure',
-        icon: '4-7'
+        value: '6-10', 
+        label: '6-10 days',
+        icon: <span className="day-count">6-10</span>
       },
       { 
-        value: '8-14', 
-        label: '8-14 days',
-        description: 'Extended journey',
-        icon: '8-14'
+        value: '11-15', 
+        label: '11-15 days',
+        icon: <span className="day-count">11-15</span>
       },
       { 
         value: '15+', 
         label: '15+ days',
-        description: 'Epic expedition',
-        icon: '15+'
+        icon: <span className="day-count">15+</span>
       },
     ],
   },
   {
     id: 3,
     question: 'Do you prefer to travel in a group or solo?',
-    description: 'We can match you with the right experience',
-    icon: <TeamIcon />,
+    icon: <TeamOutlined />,
     options: [
       { 
         value: 'solo', 
-        label: 'Solo',
-        description: 'I prefer to explore on my own',
-        icon: '👤'
+        label: 'Solo Traveler',
+        icon: '👤',
+        description: 'I prefer to explore on my own at my own pace'
       },
       { 
         value: 'small-group', 
-        label: 'Small Group', 
-        description: '2-4 people',
-        icon: '👥'
+        label: 'Small Group (2-4 people)', 
+        icon: '👥',
+        description: 'I enjoy the company of a few close friends or family'
       },
       { 
         value: 'medium-group', 
-        label: 'Medium Group',
-        description: '5-10 people',
-        icon: '👥👥'
+        label: 'Medium Group (5-10 people)',
+        icon: '👥👥',
+        description: 'I like meeting new people and making friends'
       },
       { 
         value: 'large-group',
-        label: 'Large Group', 
-        description: '10+ people',
-        icon: '👥👥👥'
+        label: 'Large Group (10+ people)', 
+        icon: '👥👥👥',
+        description: 'I love the energy of a big group'
       }
     ],
   },
   {
     id: 4,
-    question: 'What type of scenery excites you most?',
-    description: 'Choose what inspires your journey',
+    question: 'What type of scenery do you prefer?',
     icon: <MountainOutlined />,
     options: [
       { 
         value: 'mountain', 
-        label: 'Mountain Peaks',
-        description: 'Snow-capped summits',
-        icon: '🏔️'
+        label: 'High mountain peaks',
+        icon: <MountainOutlined style={{ color: '#722ed1' }} />
       },
       { 
         value: 'valley', 
-        label: 'Lush Valleys',
-        description: 'Green landscapes',
-        icon: '🌿'
+        label: 'Valleys and rivers',
+        icon: <EnvironmentOutlined style={{ color: '#13c2c2' }} />
       },
       { 
-        value: 'village', 
-        label: 'Village Life',
-        description: 'Cultural immersion',
-        icon: '🏘️'
+        value: 'forest', 
+        label: 'Lush forests',
+        icon: <TreeOutlined style={{ color: '#52c41a' }} />
       },
       { 
-        value: 'wilderness', 
-        label: 'Remote Wilderness',
-        description: 'Off the beaten path',
-        icon: '🌲'
+        value: 'cultural', 
+        label: 'Cultural villages',
+        icon: <HomeOutlined style={{ color: '#fa8c16' }} />
       },
     ],
   },
   {
     id: 5,
-    question: 'What is your main goal for this trek?',
-    description: 'What drives your adventure?',
+    question: 'What is your maximum comfortable altitude?',
     icon: <FlagFilled />,
     options: [
       { 
-        value: 'adventure', 
-        label: 'Adventure',
-        description: 'Challenge myself',
-        icon: '⚡'
+        value: '3000', 
+        label: 'Below 3,000m',
+        icon: <span className="altitude">3,000m</span>,
+        level: 'Low'
       },
       { 
-        value: 'nature', 
-        label: 'Nature',
-        description: 'Connect with nature',
-        icon: '🌳'
+        value: '4000', 
+        label: '3,000m - 4,000m',
+        icon: <span className="altitude">4,000m</span>,
+        level: 'Moderate'
       },
       { 
-        value: 'culture', 
-        label: 'Culture',
-        description: 'Local experiences',
-        icon: '🎭'
+        value: '5000', 
+        label: '4,000m - 5,000m',
+        icon: <span className="altitude">5,000m</span>,
+        level: 'High'
       },
       { 
-        value: 'wellness', 
-        label: 'Wellness',
-        description: 'Relax and recharge',
-        icon: '🧘'
+        value: '5500+', 
+        label: '5,000m+',
+        icon: <span className="altitude">5,000m+</span>,
+        level: 'Extreme'
       },
     ],
   },
@@ -218,173 +204,202 @@ const TrekQuiz = () => {
   const [answers, setAnswers] = useState({});
   const [showResult, setShowResult] = useState(false);
   const [recommendation, setRecommendation] = useState(null);
+  const [questionEnter, setQuestionEnter] = useState(true);
   const navigate = useNavigate();
   
+  // Animation for question transitions
+  useEffect(() => {
+    setQuestionEnter(true);
+    const timer = setTimeout(() => setQuestionEnter(false), 100);
+    return () => clearTimeout(timer);
+  }, [currentQuestion]);
+
   const handleAnswer = (questionId, answer) => {
-    const newAnswers = {
+    setAnswers({
       ...answers,
-      [questionId]: answer
-    };
-    setAnswers(newAnswers);
-    
-    // Auto-advance to next question after selection
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-      } else {
-        calculateRecommendation(newAnswers);
-      }
-    }, 300);
+      [questionId]: answer,
+    });
+  };
+
+  const nextQuestion = () => {
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    }
   };
 
   const prevQuestion = () => {
     if (currentQuestion > 0) {
-      setCurrentQuestion(prev => prev - 1);
-    } else {
-      navigate(-1);
+      setCurrentQuestion(currentQuestion - 1);
     }
   };
 
-  const calculateRecommendation = (answers) => {
-    // Simple recommendation logic - can be enhanced
-    const experience = answers[1] || 'beginner';
-    const duration = answers[2];
-    const groupSize = answers[3];
-    const scenery = answers[4];
-    const goal = answers[5];
+  const calculateRecommendation = () => {
+    // Simple scoring system - in a real app, this would be more sophisticated
+    const score = {
+      beginner: 0,
+      intermediate: 0,
+      advanced: 0,
+    };
 
-    // This is a simplified recommendation logic
-    if (experience === 'beginner') return showResults('beginner');
-    if (experience === 'expert') return showResults('expert');
-    return showResults('intermediate');
-  };
+    // Score based on experience level (heaviest weight)
+    if (answers[1] === 'beginner') score.beginner += 3;
+    else if (answers[1] === 'intermediate') score.intermediate += 2;
+    else if (answers[1] === 'advanced') score.advanced += 3;
+    else if (answers[1] === 'expert') score.advanced += 4;
 
-  const showResults = (level) => {
-    setRecommendation(recommendations[level]);
+    // Score based on duration
+    if (answers[2] === '3-5') score.beginner += 2;
+    else if (answers[2] === '6-10') score.intermediate += 2;
+    else if (answers[2] === '11-15') score.advanced += 2;
+    else if (answers[2] === '15+') score.advanced += 3;
+
+    // Score based on altitude
+    if (answers[5] === '3000') score.beginner += 2;
+    else if (answers[5] === '4000') score.intermediate += 2;
+    else if (answers[5] === '5000') score.advanced += 2;
+    else if (answers[5] === '5500+') score.advanced += 3;
+
+    // Determine the highest score
+    let maxScore = Math.max(score.beginner, score.intermediate, score.advanced);
+    let result = 'intermediate'; // default
+
+    if (score.beginner === maxScore) result = 'beginner';
+    else if (score.advanced === maxScore) result = 'advanced';
+
+    setRecommendation(recommendations[result]);
     setShowResult(true);
   };
 
-  const resetQuiz = () => {
-    setCurrentQuestion(0);
-    setAnswers({});
-    setShowResult(false);
-    setRecommendation(null);
+  const handleSubmit = () => {
+    if (currentQuestion === questions.length - 1) {
+      calculateRecommendation();
+    } else {
+      nextQuestion();
+    }
   };
+
+  const progress = ((currentQuestion + 1) / questions.length) * 100;
+  const currentQuestionData = questions[currentQuestion];
+  const currentAnswer = answers[currentQuestionData?.id];
+  
+  // Get icon for the current question
+  const QuestionIcon = currentQuestionData?.icon || <StarFilled />;
 
   if (showResult && recommendation) {
     return (
-      <div className="kimkim-result-container">
-        <div className="kimkim-result-content">
-          <h1>{recommendation.title}</h1>
-          <p className="result-description">{recommendation.description}</p>
-          
-          <div className="result-actions">
-            <Button 
-              type="primary" 
-              size="large"
-              className="primary-button"
-              onClick={() => navigate('/all-treks')}
-            >
-              Explore Recommended Treks
-            </Button>
-            <Button 
-              type="text" 
-              className="text-button"
-              onClick={resetQuiz}
-            >
-              Retake the Quiz
-            </Button>
-          </div>
-
-          <div className="recommended-treks">
-            <h2>Top Picks For You</h2>
-            <div className="trek-grid">
-              {recommendation.treks && recommendation.treks.map((trek, index) => (
-                <div key={index} className="trek-card">
-                  <div 
-                    className="trek-image" 
-                    style={{ backgroundImage: `url(${trek.image})` }}
-                  >
-                    <div className="trek-difficulty">{trek.difficulty}</div>
-                  </div>
-                  <div className="trek-details">
-                    <h3>{trek.name}</h3>
-                    <p className="trek-duration">{trek.duration}</p>
-                    <p className="trek-highlights">{trek.highlights}</p>
-                    <div className="trek-footer">
-                      <span className="trek-price">From ${trek.price}</span>
-                      <Button 
-                        type="primary" 
-                        size="small"
-                        onClick={() => navigate(`/trek/${trek.id}`)}
-                      >
-                        View Details
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+      <div className="quiz-container">
+        <Card className="quiz-card">
+          <Result
+            status="success"
+            title="Your Trek Recommendation"
+            subTitle={recommendation.description}
+            extra={[
+              <Button 
+                type="primary" 
+                key="explore" 
+                onClick={() => navigate('/treks')}
+                icon={<CheckCircleFilled />}
+              >
+                Explore Recommended Treks
+              </Button>,
+              <Button 
+                key="back" 
+                onClick={() => {
+                  setShowResult(false);
+                  setCurrentQuestion(0);
+                  setAnswers({});
+                }}
+              >
+                Retake Quiz
+              </Button>,
+            ]}
+          >
+            <div className="recommendations">
+              {recommendation.treks.map((trek, index) => (
+                <Card key={index} style={{ marginBottom: 16 }}>
+                  <Title level={4}>{trek.name || trek}</Title>
+                  {trek.duration && <p><strong>Duration:</strong> {trek.duration}</p>}
+                  {trek.maxAltitude && <p><strong>Max Altitude:</strong> {trek.maxAltitude}</p>}
+                </Card>
               ))}
             </div>
-          </div>
-        </div>
+          </Result>
+        </Card>
       </div>
     );
   }
 
-  const currentQuestionData = questions[currentQuestion];
-  const progress = ((currentQuestion) / (questions.length - 1)) * 100;
-  
   return (
-    <div className="kimkim-quiz-container">
-      <div className="progress-bar-container">
-        <div 
-          className="progress-bar" 
-          style={{ width: `${progress}%` }}
-        ></div>
-      </div>
-      
-      <div className="kimkim-quiz-content">
-        <div className="question-header">
-          <h1>{currentQuestionData.question}</h1>
-          {currentQuestionData.description && (
-            <p className="question-subtitle">{currentQuestionData.description}</p>
-          )}
-        </div>
-        
-        <div className="options-grid">
-          {currentQuestionData.options.map((option, index) => (
-            <div 
-              key={index}
-              className={`option-card ${answers[currentQuestionData.id] === option.value ? 'selected' : ''}`}
-              onClick={() => handleAnswer(currentQuestionData.id, option.value)}
-            >
-              <div className="option-icon">{option.icon}</div>
-              <div className="option-content">
-                <h3>{option.label}</h3>
-                {option.description && <p>{option.description}</p>}
-              </div>
-              <div className="checkmark">
-                <CheckOutlined />
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        <div className="navigation-buttons">
+    <div className={`quiz-container ${questionEnter ? 'question-enter' : ''}`}>
+      <Card className="quiz-card">
+        <div className="quiz-header">
           <Button 
             type="text" 
-            icon={<ArrowLeftOutlined />}
-            onClick={prevQuestion}
             className="back-button"
+            icon={<ArrowLeftOutlined />} 
+            onClick={() => currentQuestion === 0 ? navigate(-1) : prevQuestion()}
           >
-            {currentQuestion === 0 ? 'Back to Home' : 'Back'}
+            {currentQuestion === 0 ? 'Back to Home' : 'Previous'}
           </Button>
-          
-          <div className="step-indicator">
-            {currentQuestion + 1} of {questions.length}
+          <div className="quiz-progress">
+            <span className="question-count">Question {currentQuestion + 1} of {questions.length}</span>
+            <Progress 
+              percent={progress} 
+              showInfo={false} 
+              strokeColor={{
+                '0%': '#108ee9',
+                '100%': '#87d068',
+              }}
+              strokeWidth={8}
+              className="progress-bar"
+            />
           </div>
         </div>
-      </div>
+
+
+        <div className="question-container">
+          <div className="question-header">
+            <div className="question-icon">
+              {QuestionIcon}
+            </div>
+            <Title level={3} className="question-title">{currentQuestionData.question}</Title>
+          </div>
+          
+          <div className="options-grid">
+            {currentQuestionData.options.map((option, index) => (
+              <div 
+                key={index} 
+                className={`option-card ${currentAnswer === option.value ? 'selected' : ''}`}
+                onClick={() => handleAnswer(currentQuestionData.id, option.value)}
+              >
+                <div className="option-icon">
+                  {option.icon || <StarFilled />}
+                  {option.level && <span className="level-badge">{option.level}</span>}
+                </div>
+                <div className="option-label">{option.label}</div>
+                {currentAnswer === option.value && (
+                  <div className="checkmark">
+                    <CheckOutlined />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="quiz-actions">
+          <Button 
+            type="primary" 
+            onClick={handleSubmit}
+            disabled={!currentAnswer}
+            size="large"
+            className={`next-button ${!currentAnswer ? 'disabled' : ''}`}
+            icon={currentQuestion === questions.length - 1 ? <ThunderboltFilled /> : null}
+          >
+            {currentQuestion === questions.length - 1 ? 'Get Recommendations' : 'Next'}
+          </Button>
+        </div>
+      </Card>
     </div>
   );
 };
