@@ -19,6 +19,7 @@ import AboutPage from './pages/AboutPage';
 import GuidesPage from './pages/GuidesPage';
 import ContactPage from './pages/ContactPage';
 import BlogPage from './pages/BlogPage';
+import TrekQuiz from './pages/quiz/TrekQuiz';
 
 // Admin components
 import AdminLogin from './pages/admin/Login';
@@ -95,6 +96,7 @@ function MainLayout() {
           <Route path="/trek/:id" element={<TrekDetail />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/quiz" element={<TrekQuiz />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

@@ -1,7 +1,13 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './HowItWorks.css';
 
 const HowItWorks = () => {
+  const navigate = useNavigate();
+  
+  const handleGetStarted = () => {
+    navigate('/quiz');
+  };
   const steps = [
     {
       number: 1,
@@ -60,7 +66,10 @@ const HowItWorks = () => {
         <div className="how-it-works-cta">
           <h3>Ready to Start Your Trek?</h3>
           <p>Join hundreds of travelers who have already experienced authentic Nepal with JUMA TREK</p>
-          <button className="btn btn--primary btn--lg">
+          <button 
+            className="btn btn--primary btn--lg"
+            onClick={handleGetStarted}
+          >
             Get Started Now
           </button>
         </div>
