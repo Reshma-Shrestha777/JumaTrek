@@ -1,64 +1,338 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { motion } from 'framer-motion';
-import { Select, InputNumber, Slider, Button, Steps, Form, Input, DatePicker } from 'antd';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Select, InputNumber, Slider, Button, Steps, Form, Input, DatePicker, 
+  Card, Row, Col, Typography, Divider, Collapse, Tag, Alert, Checkbox, Radio,
+  message, Spin, Result
+} from 'antd';
 import dayjs from 'dayjs';
 import { 
-  UserOutlined, 
-  EnvironmentOutlined, 
-  TeamOutlined, 
-  CalendarOutlined, 
-  DollarOutlined, 
-  StarOutlined, 
-  InfoCircleOutlined,
-  ArrowLeftOutlined,
-  ArrowRightOutlined,
-  CheckOutlined
+  UserOutlined, EnvironmentOutlined, TeamOutlined, CalendarOutlined, 
+  DollarOutlined, StarOutlined, InfoCircleOutlined, ArrowLeftOutlined,
+  ArrowRightOutlined, CheckOutlined, SafetyOutlined, HeartOutlined,
+  HomeOutlined, CarOutlined, ForkOutlined, MedicineBoxOutlined,
+  ToolOutlined, GlobalOutlined, ClockCircleOutlined, FireOutlined,
+  CheckCircleOutlined, SmileOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
 import './CustomTrip.css';
+
+// Import step components
+import TrekDetailsStep from '../components/trekplanner/TrekDetailsStep';
+import GroupExperienceStep from '../components/trekplanner/GroupExperienceStep';
+import AccommodationMealsStep from '../components/trekplanner/AccommodationMealsStep';
+import ServicesTransportStep from '../components/trekplanner/ServicesTransportStep';
+import BudgetDatesStep from '../components/trekplanner/BudgetDatesStep';
+import ReviewSubmitStep from '../components/trekplanner/ReviewSubmitStep';
+
+const { Title, Text, Paragraph } = Typography;
+const { Panel } = Collapse;
 
 const { Option } = Select;
 const { TextArea } = Input;
 const { Step } = Steps;
 
+// Trek Difficulty Levels
 const difficultyLevels = [
-  { value: 'easy', label: 'Easy' },
-  { value: 'moderate', label: 'Moderate' },
-  { value: 'challenging', label: 'Challenging' },
-  { value: 'difficult', label: 'Difficult' },
-  { value: 'extreme', label: 'Extreme' }
+  { value: 'easy', label: 'Easy', description: '3-5 hours of walking per day, gentle terrain, low altitude' },
+  { value: 'moderate', label: 'Moderate', description: '5-7 hours of walking, some steep sections, up to 4,000m altitude' },
+  { value: 'challenging', label: 'Challenging', description: '6-8 hours of walking, steep ascents/descents, up to 5,500m' },
+  { value: 'difficult', label: 'Difficult', description: '7-9 hours of walking, technical terrain, high altitude above 5,500m' },
+  { value: 'extreme', label: 'Extreme', description: 'Expedition style, technical climbing, extreme altitude' }
 ];
 
+// Accommodation Types
 const accommodationTypes = [
-  { value: 'camping', label: 'Camping' },
-  { value: 'teahouse', label: 'Tea House' },
-  { value: 'lodge', label: 'Lodge' },
-  { value: 'hotel', label: 'Hotel' },
-  { value: 'homestay', label: 'Homestay' }
+  { value: 'camping', label: 'Camping', icon: <HomeOutlined /> },
+  { value: 'teahouse', label: 'Tea House', icon: <HomeOutlined /> },
+  { value: 'lodge', label: 'Mountain Lodge', icon: <HomeOutlined /> },
+  { value: 'hotel', label: 'Hotel', icon: <HomeOutlined /> },
+  { value: 'homestay', label: 'Homestay', icon: <HomeOutlined /> }
+];
+
+// Experience Levels
+const experienceLevels = [
+  { value: 'beginner', label: 'Beginner', description: 'First time trekking' },
+  { value: 'novice', label: 'Novice', description: '1-2 treks completed' },
+  { value: 'intermediate', label: 'Intermediate', description: '3-5 treks, some at high altitude' },
+  { value: 'experienced', label: 'Experienced', description: 'Multiple high-altitude treks' },
+  { value: 'expert', label: 'Expert', description: 'Extensive high-altitude experience' }
+];
+
+// Fitness Levels
+const fitnessLevels = [
+  { value: 'low', label: 'Low', description: 'Minimal exercise, mostly sedentary' },
+  { value: 'moderate', label: 'Moderate', description: 'Some regular exercise' },
+  { value: 'good', label: 'Good', description: 'Regular exercise 3-4 times per week' },
+  { value: 'very_good', label: 'Very Good', description: 'Regular cardio and strength training' },
+  { value: 'excellent', label: 'Excellent', description: 'Athletic training, regular endurance exercise' }
+];
+
+// Meal Preferences
+const mealPreferences = [
+  { value: 'vegetarian', label: 'Vegetarian' },
+  { value: 'vegan', label: 'Vegan' },
+  { value: 'non_vegetarian', label: 'Non-Vegetarian' },
+  { value: 'gluten_free', label: 'Gluten-Free' },
+  { value: 'lactose_free', label: 'Lactose-Free' },
+  { value: 'halal', label: 'Halal' },
+  { value: 'kosher', label: 'Kosher' }
+];
+
+// Transportation Options
+const transportOptions = [
+  { value: 'private_vehicle', label: 'Private Vehicle' },
+  { value: 'public_bus', label: 'Public Bus' },
+  { value: 'flight', label: 'Domestic Flight' },
+  { value: 'helicopter', label: 'Helicopter (where applicable)' }
+];
+
+// Popular Trekking Routes in Nepal
+const popularTreks = [
+  { value: 'everest_base_camp', label: 'Everest Base Camp' },
+  { value: 'annapurna_circuit', label: 'Annapurna Circuit' },
+  { value: 'langtang_valley', label: 'Langtang Valley' },
+  { value: 'manaslu_circuit', label: 'Manaslu Circuit' },
+  { value: 'upper_mustang', label: 'Upper Mustang' },
+  { value: 'annapurna_base_camp', label: 'Annapurna Base Camp' },
+  { value: 'ghorepani_poonhill', label: 'Ghorepani Poon Hill' },
+  { value: 'kanchenjunga', label: 'Kanchenjunga Base Camp' },
+  { value: 'makalu_base_camp', label: 'Makalu Base Camp' },
+  { value: 'rolwaling_valley', label: 'Rolwaling Valley' },
+  { value: 'custom', label: 'Custom Route' }
+];
+
+// Group Types
+const groupTypes = [
+  { value: 'solo', label: 'Solo Traveler' },
+  { value: 'couple', label: 'Couple' },
+  { value: 'friends', label: 'Friends' },
+  { value: 'family', label: 'Family' },
+  { value: 'corporate', label: 'Corporate Group' },
+  { value: 'school', label: 'School/College' }
+];
+
+// Budget Ranges (per person in USD)
+const budgetRanges = [
+  { value: 'budget', label: 'Budget ($500-$1000)', min: 500, max: 1000 },
+  { value: 'standard', label: 'Standard ($1000-$2000)', min: 1000, max: 2000 },
+  { value: 'comfort', label: 'Comfort ($2000-$3500)', min: 2000, max: 3500 },
+  { value: 'luxury', label: 'Luxury ($3500+)', min: 3500, max: 10000 }
 ];
 
 const CustomTrip = () => {
+  const [form] = Form.useForm();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
+    // Basic Information
     destination: '',
+    customDestination: '',
     startDate: null,
     endDate: null,
+    duration: 10, // Default 10 days
     groupSize: 1,
+    groupType: 'friends',
+    ageRange: { min: 20, max: 50 },
+    
+    // Experience & Fitness
     difficulty: 'moderate',
-    budget: 1000,
+    experienceLevel: 'beginner',
+    fitnessLevel: 'moderate',
+    
+    // Accommodation & Meals
     accommodation: 'teahouse',
-    specialRequirements: '',
+    mealPreferences: ['vegetarian'],
+    dietaryRestrictions: '',
+    
+    // Services
+    guideRequired: true,
+    porterRequired: true,
+    transportation: ['private_vehicle'],
+    insuranceRequired: true,
+    equipmentRental: false,
+    
+    // Budget
+    budgetRange: 'standard',
+    budgetAmount: 1500, // USD
+    
+    // Special Requests
+    specialRequests: '',
+    
+    // Contact Information
     contactInfo: {
       name: '',
       email: '',
-      phone: ''
-    }
+      phone: '',
+      country: '',
+      emergencyContact: {
+        name: '',
+        relationship: '',
+        phone: '',
+        email: ''
+      }
+    },
+    
+    // Internal use
+    itinerary: [],
+    gearRecommendations: [],
+    costBreakdown: {},
+    safetyNotes: []
   });
+  
   const [destinations, setDestinations] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [hasPendingTrip, setHasPendingTrip] = useState(false);
   const navigate = useNavigate();
+  
+  // Reset form to initial state when component mounts
+  useEffect(() => {
+    // Clear any existing form data
+    const resetForm = () => {
+      const initialState = {
+        // Basic Information
+        destination: '',
+        customDestination: '',
+        startDate: null,
+        endDate: null,
+        duration: 10,
+        groupSize: 1,
+        groupType: 'friends',
+        // Reset all other form fields to their defaults
+        experienceLevel: 'beginner',
+        fitnessLevel: 'average',
+        hasMedicalCondition: false,
+        medicalCondition: '',
+        accommodationType: 'teahouse',
+        mealPreferences: ['nepali'],
+        specialDietary: '',
+        needsGuide: true,
+        needsPorter: false,
+        transportType: 'private',
+        budgetRange: 'standard',
+        budgetMin: 1000,
+        budgetMax: 2000,
+        flexibleDates: false,
+        contactInfo: {
+          name: '',
+          email: '',
+          phone: '',
+          country: '',
+          emergencyContact: {
+            name: '',
+            relationship: '',
+            phone: ''
+          }
+        },
+        specialRequests: '',
+        termsAgreed: false,
+        // Internal use
+        itinerary: [],
+        gearRecommendations: [],
+        costBreakdown: {},
+        safetyNotes: []
+      };
+
+      setFormData(initialState);
+      if (form) {
+        form.resetFields();
+        form.setFieldsValue(initialState);
+      }
+    };
+
+    resetForm();
+
+    // Only load draft if user explicitly wants to continue
+    const loadDraft = () => {
+      const pendingTrip = localStorage.getItem('pendingCustomTrip');
+      if (pendingTrip) {
+        try {
+          const tripData = JSON.parse(pendingTrip);
+          if (tripData.isDraft) {
+            // Ask user if they want to continue with draft
+            Modal.confirm({
+              title: 'Continue with draft?',
+              content: 'We found a previously saved trip draft. Would you like to continue where you left off?',
+              okText: 'Continue Draft',
+              cancelText: 'Start New Trip',
+              onOk() {
+                setFormData(tripData);
+                setHasPendingTrip(true);
+                if (form) {
+                  form.setFieldsValue(tripData);
+                }
+              },
+              onCancel() {
+                // Clear the draft if user wants to start fresh
+                localStorage.removeItem('pendingCustomTrip');
+              },
+            });
+          }
+        } catch (error) {
+          console.error('Error parsing pending trip data:', error);
+          localStorage.removeItem('pendingCustomTrip');
+        }
+      }
+    };
+
+    loadDraft();
+  }, [form]);
+  
+  // Form steps configuration
+  const steps = [
+    { title: 'Trek Details', icon: <EnvironmentOutlined /> },
+    { title: 'Group & Experience', icon: <TeamOutlined /> },
+    { title: 'Accommodation & Meals', icon: <HomeOutlined /> },
+    { title: 'Services & Transport', icon: <CarOutlined /> },
+    { title: 'Budget & Dates', icon: <DollarOutlined /> },
+    { title: 'Review & Submit', icon: <CheckOutlined /> }
+  ];
+  
+  // Calculate end date based on start date and duration
+  const calculateEndDate = (startDate, duration) => {
+    if (!startDate) return null;
+    return dayjs(startDate).add(duration - 1, 'day');
+  };
+  
+  // Handle form field changes
+  const handleInputChange = (name, value) => {
+    // Update the form field value
+    if (form) {
+      form.setFieldsValue({ [name]: value });
+    }
+    // Special handling for fields that affect other fields
+    if (name === 'startDate' || name === 'duration') {
+      const newFormData = { ...formData, [name]: value };
+      if (name === 'startDate' && formData.duration) {
+        newFormData.endDate = calculateEndDate(value, formData.duration);
+      } else if (name === 'duration' && formData.startDate) {
+        newFormData.endDate = calculateEndDate(formData.startDate, value);
+      }
+      setFormData(newFormData);
+    } else if (name === 'budgetRange') {
+      const range = budgetRanges.find(r => r.value === value);
+      setFormData(prev => ({
+        ...prev,
+        budgetRange: value,
+        budgetAmount: Math.round((range.min + range.max) / 2) // Set to middle of range
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+  
+  // Handle nested object updates
+  const handleNestedChange = (parent, name, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [parent]: {
+        ...prev[parent],
+        [name]: value
+      }
+    }));
+  };
 
   useEffect(() => {
     // Fetch destinations from your API
@@ -94,234 +368,308 @@ const CustomTrip = () => {
     fetchDestinations();
   }, []);
 
-  const handleInputChange = (name, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleContactInfoChange = (name, value) => {
-    setFormData(prev => ({
-      ...prev,
-      contactInfo: {
-        ...prev.contactInfo,
-        [name]: value
+  const nextStep = () => {
+    // Get current form values
+    const formValues = form ? form.getFieldsValue() : {};
+    
+    // Basic validation before proceeding to next step
+    if (currentStep === 0) {
+      if (!formValues.destination && !formData.destination) {
+        message.error('Please select a destination');
+        return;
       }
-    }));
-  };
-
-  const handleDateRangeChange = (dates) => {
-    if (dates && dates.length === 2) {
+    } else if (currentStep === 1) {
+      if (!formValues.groupType && !formData.groupType) {
+        message.error('Please select a group type');
+        return;
+      }
+    }
+    
+    // Update form data with current values before proceeding
+    if (form) {
+      const currentValues = form.getFieldsValue(true);
       setFormData(prev => ({
         ...prev,
-        startDate: dates[0],
-        endDate: dates[1]
+        ...currentValues,
+        contactInfo: {
+          ...prev.contactInfo,
+          ...(currentValues.contactInfo || {})
+        }
       }));
     }
-  };
-
-  const nextStep = () => {
-    setCurrentStep(prev => prev + 1);
+    
+    // Proceed to next step
+    setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const prevStep = () => {
-    setCurrentStep(prev => prev - 1);
+    setCurrentStep(prev => Math.max(prev - 1, 0));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSubmit = async () => {
+  const checkAuth = () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    return {
+      isAuthenticated: !!user,
+      token: user?.token
+    };
+  };
+
+  const handleSubmit = async (formValues) => {
+    console.log('Form submitted with values:', formValues);
+    if (!form) {
+      console.error('Form instance not available');
+      message.error('Form initialization error. Please refresh the page.');
+      return;
+    }
+    if (!form) {
+      console.error('Form instance not available');
+      message.error('Form initialization error. Please refresh the page.');
+      return;
+    }
     setLoading(true);
     try {
-      // Replace with your API endpoint
-      await axios.post('/api/custom-trips', formData);
-      toast.success('Your custom trip request has been submitted successfully!');
-      navigate('/');
+      // Check authentication status
+      const { isAuthenticated } = checkAuth();
+      
+      if (!isAuthenticated) {
+        // Save form data to localStorage before redirecting to login
+        const formDataToSave = {
+          ...formData,
+          ...formValues,
+          contactInfo: {
+            ...formData.contactInfo,
+            ...(formValues.contactInfo || {}),
+            emergencyContact: {
+              ...(formData.contactInfo?.emergencyContact || {}),
+              ...(formValues.emergencyContact || {})
+            }
+          },
+          termsAgreed: formValues.termsAgreed || false,
+          isDraft: true,
+          timestamp: new Date().toISOString()
+        };
+        
+        localStorage.setItem('pendingCustomTrip', JSON.stringify(formDataToSave));
+        
+        // Show message and redirect to login
+        message.info('Please sign in to submit your custom trip request');
+        navigate('/login', { 
+          state: { 
+            from: 'custom-trip',
+            message: 'Please sign in to complete your custom trip submission'
+          } 
+        });
+        return;
+      }
+
+      // If user is authenticated, proceed with submission
+      const submissionData = {
+        ...formValues,
+        // Ensure we have all required fields with defaults
+        contactInfo: {
+          name: formValues.contactInfo?.name || '',
+          email: formValues.contactInfo?.email || '',
+          phone: formValues.contactInfo?.phone || '',
+          country: formValues.contactInfo?.country || '',
+          emergencyContact: {
+            name: formValues.contactInfo?.emergencyContact?.name || '',
+            relationship: formValues.contactInfo?.emergencyContact?.relationship || '',
+            phone: formValues.contactInfo?.emergencyContact?.phone || ''
+          }
+        },
+        ...formData,
+        ...formValues,
+        contactInfo: {
+          ...formData.contactInfo,
+          ...(formValues.contactInfo || {}),
+          emergencyContact: {
+            ...(formData.contactInfo?.emergencyContact || {}),
+            ...(formValues.emergencyContact || {})
+          }
+        },
+        termsAgreed: formValues.termsAgreed || false
+      };
+
+      // Validate required fields
+      if (!submissionData.destination) {
+        throw new Error('Please select a destination');
+      }
+      if (!submissionData.startDate) {
+        throw new Error('Please select a start date');
+      }
+      if (!submissionData.contactInfo?.name || !submissionData.contactInfo?.email) {
+        throw new Error('Please provide your contact information');
+      }
+      
+      console.log('Submitting form data:', submissionData);
+      
+      try {
+        // Make the API call with authentication
+        const response = await axios.post('/api/custom-trips', submissionData, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${checkAuth().token}`
+          }
+        });
+        
+        console.log('Submission successful:', response.data);
+        
+        // Show success message
+        message.success('Your custom trek request has been submitted successfully!');
+        
+        // Clear form and any pending trip data
+        form.resetFields();
+        localStorage.removeItem('pendingCustomTrip');
+        
+        // Show success message with a button to create another trip
+        Modal.success({
+          title: 'Trip Submitted Successfully!',
+          content: 'Your custom trip request has been received. You will be redirected to your profile.',
+          okText: 'Create Another Trip',
+          onOk: () => {
+            // Reset form for new trip
+            form.resetFields();
+            setCurrentStep(0);
+          }
+        });
+        
+        // Redirect to user profile after 5 seconds if user doesn't click the button
+        setTimeout(() => {
+          navigate('/profile');
+        }, 5000);
+        
+      } catch (apiError) {
+        console.error('API Error:', apiError);
+        const errorMessage = apiError.response?.data?.message || 'Failed to submit your request. Please try again.';
+        
+        if (apiError.response?.status === 401) {
+          // Token expired or invalid - redirect to login
+          message.error('Your session has expired. Please sign in again.');
+          navigate('/login', { state: { from: 'custom-trip' } });
+        } else {
+          throw new Error(errorMessage);
+        }
+      }
+      
     } catch (error) {
-      console.error('Error submitting custom trip:', error);
-      toast.error('Failed to submit your request. Please try again.');
+      console.error('Error in form submission:', error);
+      message.error(error.message || 'Failed to submit your request. Please try again.');
+      return Promise.reject(error);
     } finally {
       setLoading(false);
     }
   };
+  
+  // Render the current step component
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0:
+        return (
+          <TrekDetailsStep
+            formData={formData}
+            onInputChange={handleInputChange}
+            popularTreks={popularTreks}
+            destinations={destinations}
+          />
+        );
+      case 1:
+        return (
+          <GroupExperienceStep
+            formData={formData}
+            onInputChange={handleInputChange}
+            groupTypes={groupTypes}
+            experienceLevels={experienceLevels}
+            fitnessLevels={fitnessLevels}
+          />
+        );
+      case 2:
+        return (
+          <AccommodationMealsStep
+            formData={formData}
+            onInputChange={handleInputChange}
+            accommodationTypes={accommodationTypes}
+            mealPreferences={mealPreferences}
+          />
+        );
+      case 3:
+        return (
+          <ServicesTransportStep
+            formData={formData}
+            onInputChange={handleInputChange}
+            transportOptions={transportOptions}
+          />
+        );
+      case 4:
+        return (
+          <BudgetDatesStep
+            formData={formData}
+            onInputChange={handleInputChange}
+            budgetRanges={budgetRanges}
+          />
+        );
+      case 5:
+        return (
+          <ReviewSubmitStep
+            formData={formData}
+            onPrevious={prevStep}
+            onSubmit={handleSubmit}
+            loading={loading}
+            popularTreks={popularTreks}
+            groupTypes={groupTypes}
+            experienceLevels={experienceLevels}
+            fitnessLevels={fitnessLevels}
+            accommodationTypes={accommodationTypes}
+            budgetRanges={budgetRanges}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
-  const steps = [
-    {
-      title: 'Destination',
-      content: (
-        <div className="step-content">
-          <h3>Where would you like to go?</h3>
-          <Form.Item
-            label="Destination"
-            rules={[{ required: true, message: 'Please select a destination' }]}
-          >
-            <Select
-              showSearch
-              placeholder="Select a destination"
-              optionFilterProp="children"
-              onChange={(value) => handleInputChange('destination', value)}
-              value={formData.destination}
-              suffixIcon={<EnvironmentOutlined />}
-            >
-              {destinations.map(dest => (
-                <Option key={dest._id} value={dest._id}>
-                  {dest.name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-          
-          <h3>When would you like to travel?</h3>
-          <Form.Item
-            label="Travel Dates"
-            rules={[{ required: true, message: 'Please select your travel dates' }]}
-          >
-            <DatePicker.RangePicker
-              onChange={handleDateRangeChange}
-              value={formData.startDate && formData.endDate ? [dayjs(formData.startDate), dayjs(formData.endDate)] : null}
-              style={{ width: '100%' }}
-              disabledDate={(current) => {
-                return current && current < dayjs().startOf('day');
-              }}
-            />
-          </Form.Item>
-        </div>
-      ),
-    },
-    {
-      title: 'Group & Preferences',
-      content: (
-        <div className="step-content">
-          <h3>Group Information</h3>
-          <Form.Item
-            label="Group Size"
-            rules={[{ required: true, message: 'Please select group size' }]}
-          >
-            <InputNumber
-              min={1}
-              max={20}
-              value={formData.groupSize}
-              onChange={(value) => handleInputChange('groupSize', value)}
-              style={{ width: '100%' }}
-              prefix={<TeamOutlined />}
-            />
-          </Form.Item>
-          
-          <h3>Trek Preferences</h3>
-          <Form.Item
-            label="Difficulty Level"
-            rules={[{ required: true, message: 'Please select difficulty level' }]}
-          >
-            <Select
-              value={formData.difficulty}
-              onChange={(value) => handleInputChange('difficulty', value)}
-              style={{ width: '100%' }}
-            >
-              {difficultyLevels.map(level => (
-                <Option key={level.value} value={level.value}>
-                  {level.label}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-          
-          <Form.Item
-            label="Accommodation Type"
-            rules={[{ required: true, message: 'Please select accommodation type' }]}
-          >
-            <Select
-              value={formData.accommodation}
-              onChange={(value) => handleInputChange('accommodation', value)}
-              style={{ width: '100%' }}
-            >
-              {accommodationTypes.map(type => (
-                <Option key={type.value} value={type.value}>
-                  {type.label}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-          
-          <Form.Item
-            label={`Budget per person: $${formData.budget}`}
-            className="budget-slider"
-          >
-            <Slider
-              min={500}
-              max={10000}
-              step={100}
-              value={formData.budget}
-              onChange={(value) => handleInputChange('budget', value)}
-              tooltip={{ formatter: value => `$${value}` }}
-            />
-            <div className="budget-range">
-              <span>$500</span>
-              <span>$10,000+</span>
-            </div>
-          </Form.Item>
-        </div>
-      ),
-    },
-    {
-      title: 'Details & Contact',
-      content: (
-        <div className="step-content">
-          <h3>Special Requirements</h3>
-          <Form.Item
-            label="Any special requirements or preferences?"
-            help="E.g., dietary restrictions, medical conditions, special requests"
-          >
-            <TextArea
-              rows={4}
-              value={formData.specialRequirements}
-              onChange={(e) => handleInputChange('specialRequirements', e.target.value)}
-              placeholder="Let us know if you have any special requirements..."
-            />
-          </Form.Item>
-          
-          <h3>Contact Information</h3>
-          <Form.Item
-            label="Full Name"
-            rules={[{ required: true, message: 'Please enter your name' }]}
-          >
-            <Input
-              prefix={<UserOutlined />}
-              value={formData.contactInfo.name}
-              onChange={(e) => handleContactInfoChange('name', e.target.value)}
-              placeholder="Your full name"
-            />
-          </Form.Item>
-          
-          <Form.Item
-            label="Email"
-            rules={[
-              { required: true, message: 'Please enter your email' },
-              { type: 'email', message: 'Please enter a valid email' }
-            ]}
-          >
-            <Input
-              type="email"
-              prefix={<EnvironmentOutlined />}
-              value={formData.contactInfo.email}
-              onChange={(e) => handleContactInfoChange('email', e.target.value)}
-              placeholder="your.email@example.com"
-            />
-          </Form.Item>
-          
-          <Form.Item
-            label="Phone Number"
-            rules={[{ required: true, message: 'Please enter your phone number' }]}
-          >
-            <Input
-              prefix={<InfoCircleOutlined />}
-              value={formData.contactInfo.phone}
-              onChange={(e) => handleContactInfoChange('phone', e.target.value)}
-              placeholder="+1 (123) 456-7890"
-            />
-          </Form.Item>
-        </div>
-      ),
-    },
-  ];
+
+  if (formSubmitted) {
+    return (
+      <div className="custom-trip-container">
+        <Result
+          icon={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
+          title="Your Trekking Request Has Been Submitted!"
+          subTitle={
+            <>
+              <p>Thank you for choosing JumaTrek for your adventure!</p>
+              <p>We've received your request and our team will contact you within 24 hours to finalize your trekking plan.</p>
+              <p>You'll be redirected to the homepage shortly, or <a href="/">click here</a> to return now.</p>
+            </>
+          }
+          extra={[
+            <Button type="primary" key="home" onClick={() => navigate('/')}>
+              Back to Home
+            </Button>,
+            <Button key="contact" onClick={() => window.location.href = 'mailto:info@jumatrek.com'}>
+              Contact Us
+            </Button>,
+          ]}
+        />
+      </div>
+    );
+  }
+
+  // Update form values when formData changes
+  useEffect(() => {
+    if (form) {
+      form.setFieldsValue({
+        ...formData,
+        contactInfo: {
+          ...formData.contactInfo,
+          emergencyContact: {
+            ...(formData.contactInfo?.emergencyContact || {})
+          }
+        }
+      });
+    }
+  }, [formData, form]);
 
   return (
     <div className="custom-trip-container">
@@ -332,68 +680,90 @@ const CustomTrip = () => {
         className="custom-trip-header"
       >
         <h1>Customize Your Dream Trek</h1>
-        <p>Fill out the form below to create your perfect trekking experience</p>
+        <p>Fill out the form below to create your perfect trekking experience in the Himalayas</p>
       </motion.div>
       
       <div className="custom-trip-steps">
         <Steps current={currentStep} responsive={true}>
           {steps.map((item, index) => (
-            <Step key={item.title} title={item.title} />
+            <Step 
+              key={item.title} 
+              title={item.title} 
+              icon={item.icon}
+              disabled={loading}
+            />
           ))}
         </Steps>
       </div>
       
       <div className="custom-trip-form">
-        <Form layout="vertical">
-          {steps[currentStep].content}
-          
-          <div className="form-navigation">
-            {currentStep > 0 && (
-              <Button
-                onClick={prevStep}
-                style={{ marginRight: 8 }}
-                icon={<ArrowLeftOutlined />}
-              >
-                Previous
-              </Button>
-            )}
+        <Spin spinning={loading} tip="Processing...">
+          <Form 
+            layout="vertical" 
+            form={form}
+            onFinish={currentStep === steps.length - 1 ? handleSubmit : nextStep}
+            initialValues={formData}
+          >
+            {renderStepContent()}
             
             {currentStep < steps.length - 1 && (
-              <Button type="primary" onClick={nextStep}>
-                Next <ArrowRightOutlined />
-              </Button>
+              <div className="form-navigation">
+                {currentStep > 0 && (
+                  <Button
+                    onClick={prevStep}
+                    style={{ marginRight: 8 }}
+                    icon={<ArrowLeftOutlined />}
+                    disabled={loading}
+                  >
+                    Previous
+                  </Button>
+                )}
+                
+                <Button 
+                  type="primary" 
+                  htmlType="submit"
+                  icon={<ArrowRightOutlined />}
+                  loading={loading}
+                >
+                  {currentStep === steps.length - 2 ? 'Review & Submit' : 'Next'}
+                </Button>
+              </div>
             )}
-            
-            {currentStep === steps.length - 1 && (
-              <Button
-                type="primary"
-                onClick={handleSubmit}
-                loading={loading}
-                icon={<CheckOutlined />}
-              >
-                Submit Request
-              </Button>
-            )}
-          </div>
-        </Form>
+          </Form>
+        </Spin>
       </div>
       
       <div className="custom-trip-info">
         <div className="info-card">
           <StarOutlined className="info-icon" />
-          <h4>Why Customize?</h4>
-          <p>Create a trek that matches your exact preferences, schedule, and fitness level.</p>
+          <h4>Why Choose Us?</h4>
+          <p>Local expertise, experienced guides, and 100% customizable treks tailored to your preferences.</p>
         </div>
         <div className="info-card">
-          <TeamOutlined className="info-icon" />
-          <h4>Group Discounts</h4>
-          <p>Special rates available for groups of 4 or more people.</p>
+          <SafetyOutlined className="info-icon" />
+          <h4>Safety First</h4>
+          <p>Certified guides, proper equipment, and emergency protocols for a safe adventure.</p>
         </div>
         <div className="info-card">
-          <DollarOutlined className="info-icon" />
-          <h4>Best Price Guarantee</h4>
-          <p>We'll match any lower price you find elsewhere.</p>
+          <HeartOutlined className="info-icon" />
+          <h4>Sustainable Tourism</h4>
+          <p>We're committed to responsible travel that benefits local communities.</p>
         </div>
+      </div>
+      
+      <div className="custom-trip-support">
+        <Alert
+          message="Need help?"
+          description={
+            <>
+              Our trekking experts are here to assist you. <br />
+              Call us at <a href="tel:+977-1-1234567">+977-1-1234567</a> or email <a href="mailto:info@jumatrek.com">info@jumatrek.com</a>
+            </>
+          }
+          type="info"
+          showIcon
+          icon={<SmileOutlined />}
+        />
       </div>
     </div>
   );
