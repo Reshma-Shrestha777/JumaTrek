@@ -10,6 +10,13 @@ const api = axios.create({
   },
 });
 
+const bookingApi = axios.create({
+  baseURL: 'http://localhost:5000/api/booking',
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 
 export const authService = {
@@ -57,6 +64,26 @@ export const authService = {
 
   isAuthenticated() {
     return !!localStorage.getItem('user');
+  }
+};
+
+export const bookingService = {
+  async createBooking(bookingData) {
+    try {
+      const response = await bookingApi.post('/', bookingData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Booking failed';
+    }
+  },
+
+  async getUserBookings() {
+    try {
+      const response = await bookingApi.get('/my');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to fetch bookings';
+    }
   }
 };
 

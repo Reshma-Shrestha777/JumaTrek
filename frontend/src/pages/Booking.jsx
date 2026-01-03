@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { bookingService } from '../services/api';
+import { authService } from '../services/api';
 
 const Booking = () => {
   const location = useLocation();
@@ -20,11 +22,21 @@ const Booking = () => {
     agreeTerms: false
   });
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
   useEffect(() => {
     if (trekName) {
       setFormData(prev => ({ ...prev, trek: trekName }));
     }
   }, [trekName]);
+
+  useEffect(() => {
+    if (!authService.isAuthenticated()) {
+      alert('Please login to book a trek.');
+      navigate('/auth');
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -34,11 +46,29 @@ const Booking = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Booking submitted:', formData);
-    alert('Thank you for your booking request! We will contact you within 24 hours to confirm.');
-    navigate('/');
+    setLoading(true);
+    setError('');
+
+    try {
+      const bookingData = {
+        ...formData,
+        groupSize: parseInt(formData.groupSize),
+        preferredDate: new Date(formData.preferredDate)
+      };
+      delete bookingData.agreeTerms; // Remove agreeTerms as it's not needed in backend
+
+      const response = await bookingService.createBooking(bookingData);
+      console.log('Booking created:', response);
+      alert('Thank you for your booking request! We will contact you within 24 hours to confirm.');
+      navigate('/');
+    } catch (error) {
+      console.error('Booking error:', error);
+      setError(error.response?.data?.message || 'Failed to submit booking. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -227,6 +257,8 @@ const Booking = () => {
                 </p>
               </div>
             </div>
+
+            {error && <div className="error-message" style={{ color: 'red', marginBottom: '16px' }}>{error}</div>}
 
             <div className="form-actions">
               <button type="submit" className="btn" style={{ padding: '16px 32px', fontSize: '18px' }}>
