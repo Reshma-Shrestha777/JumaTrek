@@ -4,7 +4,16 @@ import { Navigate, Outlet } from 'react-router-dom';
 const isAuthenticated = () => {
   // Check if user is authenticated
   // In a real app, you would verify the token with your backend
-  return !!localStorage.getItem('adminToken');
+  const adminToken = localStorage.getItem('adminToken');
+  if (adminToken) {
+    try {
+      const user = JSON.parse(adminToken);
+      return user.role === 'Admin';
+    } catch (e) {
+      return false;
+    }
+  }
+  return false;
 };
 
 const ProtectedRoute = () => {

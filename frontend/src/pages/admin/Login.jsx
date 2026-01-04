@@ -17,6 +17,7 @@ import {
   ArrowLeftOutlined
 } from '@ant-design/icons';
 
+
 const { Title, Text } = Typography;
 
 const AdminLogin = () => {
@@ -24,26 +25,28 @@ const AdminLogin = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  
+
   const onFinish = async (values) => {
     setLoading(true);
     setError('');
     
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('Attemping login with:', values.email);
+      const response = await authService.login(values.email, values.password);
+      console.log('Login response:', response);
       
-      // Mock validation - replace with actual API call
-      if (values.username === 'admin' && values.password === 'admin123') {
-        // In a real app, you would store the token in localStorage or httpOnly cookie
-        localStorage.setItem('adminToken', 'dummy-jwt-token');
+      if (response.role === 'Admin') {
+        localStorage.setItem('adminToken', JSON.stringify(response));
         message.success('Login successful!');
         navigate('/admin');
       } else {
-        setError('Invalid username or password');
+        setError('Access denied. Admin privileges required.');
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError('An error occurred during login. Please try again.');
+      setError(err || 'An error occurred during login. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -190,5 +193,8 @@ const AdminLogin = () => {
     </div>
   );
 };
+
+
+
 
 export default AdminLogin;
