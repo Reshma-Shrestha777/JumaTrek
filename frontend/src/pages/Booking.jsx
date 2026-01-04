@@ -31,6 +31,19 @@ const Booking = () => {
     }
   }, [trekName]);
 
+   useEffect(() => {
+    // Pre-fill personal details from user data
+    const currentUser = authService.getCurrentUser();
+    if (currentUser) {
+      setFormData(prev => ({
+        ...prev,
+        name: currentUser.name || '',
+        email: currentUser.email || '',
+        phone: currentUser.contact || ''
+      }));
+    }
+  }, []);
+
   useEffect(() => {
     if (!authService.isAuthenticated()) {
       alert('Please login to book a trek.');
