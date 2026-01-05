@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { bookingService } from '../services/api';
 import { authService } from '../services/api';
+import { toast } from 'react-toastify';
 
 const Booking = () => {
   const location = useLocation();
@@ -74,7 +75,7 @@ const Booking = () => {
 
       const response = await bookingService.createBooking(bookingData);
       console.log('Booking created:', response);
-      alert('Thank you for your booking request! We will contact you within 24 hours to confirm.');
+      toast.success('Thank you for your booking request! We will contact you within 24 hours to confirm.');
       navigate('/');
     } catch (error) {
       console.error('Booking error:', error);
