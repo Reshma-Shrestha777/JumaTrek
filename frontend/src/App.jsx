@@ -42,6 +42,7 @@ import BlogsList from './pages/admin/blogs/BlogsList';
 import AddBlog from './pages/admin/blogs/AddBlog';
 import EditBlog from './pages/admin/blogs/EditBlog';
 import ContactMessagesList from './pages/admin/messages/ContactMessagesList';
+import CustomRequestList from './pages/admin/customRequests/CustomRequestList';
 
 import './index.css';
 import './assets/styles/globals.css';
@@ -65,6 +66,7 @@ function MainLayout() {
         <Route element={<ProtectedRoute />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
+            <Route path="custom-requests" element={<CustomRequestList />} />
             <Route path="treks" element={<TreksList />} />
             <Route path="treks/add" element={<AddTrek />} />
             <Route path="treks/:id" element={<TrekDetailAdmin />} />

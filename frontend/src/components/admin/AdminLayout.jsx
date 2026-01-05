@@ -12,9 +12,11 @@ import {
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  HomeOutlined
+  HomeOutlined,
+  SolutionOutlined
 } from '@ant-design/icons';
 import { adminService } from '../../services/adminApi';
+import logo from '../../assets/images/logo.png';
 
 const { Header, Sider, Content } = Layout;
 
@@ -28,14 +30,12 @@ const AdminLayout = () => {
   } = theme.useToken();
 
   useEffect(() => {
-    // Check if user is authenticated
+    // Get admin user from localStorage
     const admin = adminService.getCurrentAdmin();
-    if (!admin) {
-      navigate('/admin/login', { replace: true });
-      return;
+    if (admin) {
+      setAdminUser(admin);
     }
-    setAdminUser(admin);
-  }, [navigate]);
+  }, []);
 
   const handleLogout = () => {
     adminService.logout();
@@ -46,12 +46,7 @@ const AdminLayout = () => {
     <Menu
       items={[
         {
-          key: '1',
-          label: 'Profile',
-          icon: <UserOutlined />,
-        },
-        {
-          key: '2',
+          key: 'logout',
           label: 'Logout',
           icon: <LogoutOutlined />,
           onClick: handleLogout,
@@ -64,6 +59,7 @@ const AdminLayout = () => {
   const getSelectedKey = () => {
     const path = location.pathname;
     if (path === '/admin' || path === '/admin/') return '1';
+    if (path.includes('/admin/custom-requests')) return 'custom-requests-list';
     if (path.includes('/admin/treks')) return '2';
     if (path.includes('/admin/users')) return '3';
     if (path.includes('/admin/bookings')) return '4';
@@ -77,6 +73,7 @@ const AdminLayout = () => {
   const getOpenKeys = () => {
     const path = location.pathname;
     const openKeys = [];
+    if (path.includes('/admin/custom-requests')) openKeys.push('custom-requests');
     if (path.includes('/admin/treks')) openKeys.push('treks');
     if (path.includes('/admin/users')) openKeys.push('users');
     if (path.includes('/admin/bookings')) openKeys.push('bookings');
@@ -88,11 +85,77 @@ const AdminLayout = () => {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider trigger={null} collapsible collapsed={collapsed} width={250}>
-        <div className="logo" style={{ height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <h2 style={{ color: 'white', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden' }}>
-            {collapsed ? 'JT' : 'JumaTrek Admin'}
-          </h2>
+      <Sider
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
+        width={250}
+        style={{
+          overflow: 'auto',
+          height: '100vh',
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          zIndex: 1,
+          boxShadow: '2px 0 8px 0 rgba(0, 0, 0, 0.15)'
+        }}
+      >
+        <div style={{
+          height: '64px',
+          padding: '0 16px',
+          display: 'flex',
+          alignItems: 'center',
+          backgroundColor: '#001529',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            width: '100%',
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              width: '40px',
+              height: '40px',
+              borderRadius: '5px',
+              overflow: 'hidden',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)'
+            }}>
+              <img
+                src={logo}
+                alt="JumaTrek"
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  objectFit: 'contain',
+                  display: 'block',
+                  borderRadius: '3px'
+                }}
+              />
+            </div>
+            {!collapsed && (
+              <span style={{
+                color: 'white',
+                fontSize: '16px',
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                opacity: 0.9,
+                letterSpacing: '0.5px',
+                marginLeft: '4px',
+                textOverflow: 'ellipsis',
+                overflow: 'hidden'
+              }}>
+                JumaTrek Admin
+              </span>
+            )}
+          </div>
         </div>
         <Menu
           theme="dark"
@@ -104,6 +167,14 @@ const AdminLayout = () => {
               key: '1',
               icon: <DashboardOutlined />,
               label: <Link to="/admin">Dashboard</Link>,
+            },
+            {
+              key: 'custom-requests',
+              icon: <SolutionOutlined />,
+              label: 'Requests',
+              children: [
+                { key: 'custom-requests-list', label: <Link to="/admin/custom-requests">Custom Requests</Link> },
+              ],
             },
             {
               key: 'treks',
@@ -159,7 +230,14 @@ const AdminLayout = () => {
           ]}
         />
       </Sider>
-      <Layout className="site-layout">
+      <Layout
+        className="site-layout"
+        style={{
+          marginLeft: collapsed ? 80 : 250,
+          minHeight: '100vh',
+          transition: 'all 0.2s'
+        }}
+      >
         <Header style={{ padding: 0, background: colorBgContainer, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           {React.createElement(collapsed ? MenuUnfoldOutlined : MenuFoldOutlined, {
             className: 'trigger',
@@ -171,11 +249,22 @@ const AdminLayout = () => {
               <HomeOutlined style={{ fontSize: '18px' }} />
               <span>View Site</span>
             </Link>
-            <Dropdown overlay={userMenu} placement="bottomRight">
-              <Space style={{ cursor: 'pointer' }}>
-                <Avatar icon={<UserOutlined />} />
-                <span>{adminUser?.name || 'Admin User'}</span>
-              </Space>
+            <Dropdown menu={{
+              items: [
+                {
+                  key: 'logout',
+                  label: 'Logout',
+                  icon: <LogoutOutlined />,
+                  onClick: handleLogout,
+                },
+              ]
+            }} placement="bottomRight">
+              <div style={{ cursor: 'pointer' }}>
+                <Space>
+                  <Avatar icon={<UserOutlined />} />
+                  <span>{adminUser?.name || 'Admin User'}</span>
+                </Space>
+              </div>
             </Dropdown>
           </div>
         </Header>

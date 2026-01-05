@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Tag, Input, Select, Card, message, Modal, Form } from 'antd';
-import { CalendarOutlined, EyeOutlined, SearchOutlined, ReloadOutlined, EditOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Tag, Input, Select, Card, message, Modal, Form, Row, Col, Statistic, DatePicker, Empty } from 'antd';
+import { CalendarOutlined, EyeOutlined, SearchOutlined, ReloadOutlined, EditOutlined, UserOutlined, TeamOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
 import { adminService } from '../../../services/adminApi';
 
 const { Search } = Input;
@@ -13,6 +14,7 @@ const BookingsList = () => {
     const [filters, setFilters] = useState({
         search: '',
         status: 'all',
+        dateRange: null,
     });
     const [statusModalVisible, setStatusModalVisible] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
@@ -49,15 +51,25 @@ const BookingsList = () => {
             const searchLower = filters.search.toLowerCase();
             filtered = filtered.filter(
                 (booking) =>
-                    booking.trekName.toLowerCase().includes(searchLower) ||
-                    booking.name.toLowerCase().includes(searchLower) ||
-                    booking.email.toLowerCase().includes(searchLower)
+                    booking.trekName?.toLowerCase().includes(searchLower) ||
+                    booking.name?.toLowerCase().includes(searchLower) ||
+                    booking.email?.toLowerCase().includes(searchLower) ||
+                    booking._id?.toLowerCase().includes(searchLower)
             );
         }
 
         // Status filter
         if (filters.status !== 'all') {
             filtered = filtered.filter((booking) => booking.status === filters.status);
+        }
+
+        // Date range filter
+        if (filters.dateRange && filters.dateRange[0] && filters.dateRange[1]) {
+            filtered = filtered.filter(booking => {
+                const bookingDate = dayjs(booking.preferredDate);
+                return bookingDate.isAfter(filters.dateRange[0]) && 
+                       bookingDate.isBefore(filters.dateRange[1].add(1, 'day'));
+            });
         }
 
         setFilteredBookings(filtered);
@@ -134,37 +146,56 @@ const BookingsList = () => {
             title: 'Booking ID',
             dataIndex: '_id',
             key: '_id',
-            render: (id) => id.slice(-8).toUpperCase(),
+            width: 100,
+            fixed: 'left',
+            render: (id) => <span style={{ fontFamily: 'monospace' }}>{id.slice(-8).toUpperCase()}</span>,
         },
         {
             title: 'Trek',
             dataIndex: 'trekName',
             key: 'trekName',
-            sorter: (a, b) => a.trekName.localeCompare(b.trekName),
+            sorter: (a, b) => a.trekName?.localeCompare(b.trekName),
+            ellipsis: true,
+            width: 150,
         },
         {
             title: 'Customer',
             dataIndex: 'name',
             key: 'name',
-            sorter: (a, b) => a.name.localeCompare(b.name),
-        },
-        {
-            title: 'Email',
-            dataIndex: 'email',
-            key: 'email',
+            sorter: (a, b) => a.name?.localeCompare(b.name),
+            render: (name, record) => (
+                <Space>
+                    <UserOutlined style={{ color: '#1890ff' }} />
+                    <span>{name}</span>
+                </Space>
+            ),
+            width: 150,
         },
         {
             title: 'Date',
             dataIndex: 'preferredDate',
             key: 'preferredDate',
             sorter: (a, b) => new Date(a.preferredDate) - new Date(b.preferredDate),
-            render: (date) => new Date(date).toLocaleDateString(),
+            render: (date) => (
+                <Space>
+                    <CalendarOutlined style={{ color: '#722ed1' }} />
+                    {dayjs(date).format('MMM D, YYYY')}
+                </Space>
+            ),
+            width: 150,
         },
         {
-            title: 'Group Size',
+            title: 'Group',
             dataIndex: 'groupSize',
             key: 'groupSize',
             align: 'center',
+            sorter: (a, b) => a.groupSize - b.groupSize,
+            render: (size) => (
+                <Tag icon={<TeamOutlined />} color="blue">
+                    {size}
+                </Tag>
+            ),
+            width: 100,
         },
         {
             title: 'Status',
@@ -178,28 +209,39 @@ const BookingsList = () => {
             ],
             onFilter: (value, record) => record.status === value,
             render: (status) => (
-                <Tag color={getStatusColor(status)}>{status.toUpperCase()}</Tag>
+                <Tag 
+                    color={getStatusColor(status)}
+                    icon={
+                        status === 'confirmed' ? <CheckCircleOutlined /> :
+                        status === 'cancelled' ? <CloseCircleOutlined /> :
+                        status === 'completed' ? <CheckCircleOutlined /> :
+                        <ClockCircleOutlined />
+                    }
+                >
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Tag>
             ),
+            width: 130,
         },
         {
             title: 'Actions',
             key: 'actions',
+            fixed: 'right',
+            width: 180,
             render: (_, record) => (
-                <Space>
+                <Space size="middle">
                     <Button
-                        type="link"
+                        type="text"
                         icon={<EyeOutlined />}
                         onClick={() => handleViewDetails(record)}
-                    >
-                        View
-                    </Button>
+                        title="View Details"
+                    />
                     <Button
-                        type="link"
+                        type="text"
                         icon={<EditOutlined />}
                         onClick={() => handleStatusUpdate(record)}
-                    >
-                        Update Status
-                    </Button>
+                        title="Update Status"
+                    />
                 </Space>
             ),
         },
@@ -210,12 +252,49 @@ const BookingsList = () => {
         confirmed: bookings.filter(b => b.status === 'confirmed').length,
         cancelled: bookings.filter(b => b.status === 'cancelled').length,
         completed: bookings.filter(b => b.status === 'completed').length,
+        total: bookings.length,
     };
 
+    const statusCards = [
+        {
+            title: 'Total Bookings',
+            value: statusCounts.total,
+            icon: <CalendarOutlined />,
+            color: '#1890ff',
+        },
+        {
+            title: 'Pending',
+            value: statusCounts.pending,
+            icon: <ClockCircleOutlined />,
+            color: '#faad14',
+        },
+        {
+            title: 'Confirmed',
+            value: statusCounts.confirmed,
+            icon: <CheckCircleOutlined />,
+            color: '#52c41a',
+        },
+        {
+            title: 'Completed',
+            value: statusCounts.completed,
+            icon: <CheckCircleOutlined />,
+            color: '#722ed1',
+        },
+        {
+            title: 'Cancelled',
+            value: statusCounts.cancelled,
+            icon: <CloseCircleOutlined />,
+            color: '#f5222d',
+        },
+    ];
+
     return (
-        <div>
-            <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2>Bookings Management</h2>
+        <div className="bookings-container">
+            <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                    <h2 style={{ marginBottom: 0 }}>Bookings Management</h2>
+                    <p style={{ color: '#8c8c8c', marginBottom: 0 }}>Manage and track all booking activities</p>
+                </div>
                 <Button
                     type="primary"
                     icon={<ReloadOutlined />}
@@ -226,47 +305,158 @@ const BookingsList = () => {
                 </Button>
             </div>
 
-            <Card>
-                <Space style={{ marginBottom: 16, width: '100%', justifyContent: 'space-between' }}>
-                    <Space>
-                        <Search
-                            placeholder="Search by trek, customer, or email"
-                            allowClear
-                            style={{ width: 300 }}
-                            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                            prefix={<SearchOutlined />}
-                        />
-                        <Select
-                            style={{ width: 150 }}
-                            value={filters.status}
-                            onChange={(value) => setFilters({ ...filters, status: value })}
+            {/* Status Cards */}
+            <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+                {statusCards.map((card, index) => (
+                    <Col xs={24} sm={12} md={12} lg={4.8} key={index}>
+                        <Card 
+                            bordered={false} 
+                            style={{ 
+                                background: card.color,
+                                color: 'white',
+                                borderRadius: 8,
+                                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                            }}
+                            bodyStyle={{ padding: '16px 24px' }}
                         >
-                            <Option value="all">All Status</Option>
-                            <Option value="pending">Pending</Option>
-                            <Option value="confirmed">Confirmed</Option>
-                            <Option value="cancelled">Cancelled</Option>
-                            <Option value="completed">Completed</Option>
-                        </Select>
-                    </Space>
-                    <Space>
-                        <Tag color="orange">Pending: {statusCounts.pending}</Tag>
-                        <Tag color="green">Confirmed: {statusCounts.confirmed}</Tag>
-                        <Tag color="red">Cancelled: {statusCounts.cancelled}</Tag>
-                        <Tag color="blue">Completed: {statusCounts.completed}</Tag>
-                    </Space>
-                </Space>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <div style={{ fontSize: 12, opacity: 0.8 }}>{card.title}</div>
+                                    <div style={{ fontSize: 24, fontWeight: 'bold' }}>{card.value}</div>
+                                </div>
+                                <div style={{ fontSize: 32 }}>
+                                    {React.cloneElement(card.icon, { style: { opacity: 0.3 } })}
+                                </div>
+                            </div>
+                        </Card>
+                    </Col>
+                ))}
+            </Row>
+
+            <Card 
+                title={
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>Booking List</span>
+                        <span style={{ fontSize: 14, color: '#8c8c8c', fontWeight: 'normal' }}>
+                            {filteredBookings.length} bookings found
+                        </span>
+                    </div>
+                }
+                bodyStyle={{ padding: 0 }}
+                headStyle={{ borderBottom: '1px solid #f0f0f0' }}
+                bordered={false}
+                className="booking-table-card"
+            >
+                <div style={{ padding: '16px 24px', borderBottom: '1px solid #f0f0f0' }}>
+                    <Row gutter={[16, 16]} align="middle">
+                        <Col xs={24} sm={12} md={8} lg={6}>
+                            <Input
+                                placeholder="Search bookings..."
+                                prefix={<SearchOutlined />}
+                                allowClear
+                                value={filters.search}
+                                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                                style={{ width: '100%' }}
+                            />
+                        </Col>
+                        <Col xs={24} sm={12} md={8} lg={6}>
+                            <Select
+                                style={{ width: '100%' }}
+                                value={filters.status}
+                                onChange={(value) => setFilters({ ...filters, status: value })}
+                                placeholder="Filter by status"
+                                allowClear
+                            >
+                                <Option value="all">All Status</Option>
+                                <Option value="pending">Pending</Option>
+                                <Option value="confirmed">Confirmed</Option>
+                                <Option value="cancelled">Cancelled</Option>
+                                <Option value="completed">Completed</Option>
+                            </Select>
+                        </Col>
+                        <Col xs={24} sm={24} md={8} lg={8}>
+                            <DatePicker.RangePicker
+                                style={{ width: '100%' }}
+                                onChange={(dates) => setFilters({ ...filters, dateRange: dates })}
+                                placeholder={['Start Date', 'End Date']}
+                                allowClear
+                            />
+                        </Col>
+                        <Col xs={24} sm={24} md={8} lg={4} style={{ textAlign: 'right' }}>
+                            <Button 
+                                onClick={() => setFilters({ search: '', status: 'all', dateRange: null })}
+                                disabled={!filters.search && filters.status === 'all' && !filters.dateRange}
+                            >
+                                Reset Filters
+                            </Button>
+                        </Col>
+                    </Row>
+                </div>
 
                 <Table
                     columns={columns}
                     dataSource={filteredBookings}
                     rowKey="_id"
                     loading={loading}
+                    scroll={{ x: 1000 }}
                     pagination={{
                         pageSize: 10,
                         showSizeChanger: true,
-                        showTotal: (total) => `Total ${total} bookings`,
+                        showTotal: (total) => `Showing ${filteredBookings.length} of ${total} bookings`,
+                        showQuickJumper: true,
+                        size: 'default',
+                    }}
+                    locale={{
+                        emptyText: (
+                            <Empty
+                                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                description={
+                                    <span>
+                                        No bookings found
+                                        {filters.search || filters.status !== 'all' || filters.dateRange ? (
+                                            <span>
+                                                . <a onClick={() => setFilters({ search: '', status: 'all', dateRange: null })}>Clear filters</a>
+                                            </span>
+                                        ) : null}
+                                    </span>
+                                }
+                            />
+                        ),
+                    }}
+                    rowClassName={(record) => `status-${record.status}`}
+                    style={{ 
+                        borderTop: '1px solid #f0f0f0',
+                        borderRadius: '0 0 8px 8px'
                     }}
                 />
+                <style jsx global>{`
+                    .ant-table-thead > tr > th {
+                        background: #fafafa;
+                        font-weight: 600;
+                    }
+                    .ant-table-tbody > tr.status-pending {
+                        background-color: #fffbe6;
+                    }
+                    .ant-table-tbody > tr.status-confirmed {
+                        background-color: #f6ffed;
+                    }
+                    .ant-table-tbody > tr.status-cancelled {
+                        background-color: #fff1f0;
+                        opacity: 0.8;
+                    }
+                    .ant-table-tbody > tr.status-completed {
+                        background-color: #f9f0ff;
+                    }
+                    .ant-table-tbody > tr:hover > td {
+                        background: #f0f5ff !important;
+                    }
+                    .booking-table-card .ant-card-head {
+                        padding: 0 24px;
+                    }
+                    .booking-table-card .ant-card-body {
+                        padding: 0;
+                    }
+                `}</style>
             </Card>
 
             <Modal
