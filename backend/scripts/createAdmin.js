@@ -1,7 +1,7 @@
 
 import dotenv from "dotenv"
 import mongoose from "mongoose"
-import User from "../model/user.model.js"
+import User from "../model/UserModel.js"
 import bcrypt from "bcryptjs"
 
 import path from "path"

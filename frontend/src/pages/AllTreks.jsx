@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
 // Format price to USD with comma separators
 const formatPrice = (priceInUsd) => {
@@ -7,7 +7,7 @@ const formatPrice = (priceInUsd) => {
 };
 
 // Extended trek data for all treks page
-const allTrekData = [
+export const allTrekData = [
   // Popular Treks
   {
     id: 1,
@@ -46,6 +46,7 @@ const allTrekData = [
 ];
 
 const AllTreks = () => {
+  const location = useLocation();
   const [filteredTreks, setFilteredTreks] = useState(allTrekData);
   const [filters, setFilters] = useState({
     region: '',
@@ -57,6 +58,30 @@ const AllTreks = () => {
 
   const regions = [...new Set(allTrekData.map(trek => trek.region))];
   const difficulties = [...new Set(allTrekData.map(trek => trek.difficulty))];
+
+  // Mapping from URL slugs to actual region names
+  const regionMapping = {
+    'everest-region': 'Khumbu',
+    'annapurna-region': 'Annapurna',
+    'langtang-region': 'Langtang',
+    'manaslu-region': 'Manaslu',
+    'mustang-region': 'Mustang'
+  };
+
+  // Set initial filters from URL params
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const regionParam = queryParams.get('region');
+    if (regionParam) {
+      const mappedRegion = regionMapping[regionParam] || regionParam;
+      const initialFilters = {
+        ...filters,
+        region: mappedRegion
+      };
+      setFilters(initialFilters);
+      applyFilters(initialFilters);
+    }
+  }, [location.search]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;

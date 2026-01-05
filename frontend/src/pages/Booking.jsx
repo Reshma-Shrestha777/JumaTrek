@@ -3,15 +3,23 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { bookingService } from '../services/api';
 import { authService } from '../services/api';
 import { toast } from 'react-toastify';
+import { trekData } from '../data/trekData';
+import { allTrekData } from './AllTreks';
+
 
 const Booking = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const queryParams = new URLSearchParams(location.search);
-  const trekName = queryParams.get('trek') || '';
 
-  const [formData, setFormData] = useState({
-    trek: trekName,
+  const queryParams = new URLSearchParams(location.search);
+  const trekFromUrl = queryParams.get('trek') || '';
+
+  const matchedTrek = allTrekData.find(
+    t => t.title === trekFromUrl
+  );
+
+   const [formData, setFormData] = useState({
+    trek: matchedTrek ? matchedTrek.id : '',
     name: '',
     email: '',
     phone: '',
@@ -23,34 +31,39 @@ const Booking = () => {
     agreeTerms: false
   });
 
+  const [selectedTrek, setSelectedTrek] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (trekName) {
-      setFormData(prev => ({ ...prev, trek: trekName }));
-    }
-  }, [trekName]);
-
+  
    useEffect(() => {
-    // Pre-fill personal details from user data
-    const currentUser = authService.getCurrentUser();
-    if (currentUser) {
-      setFormData(prev => ({
-        ...prev,
-        name: currentUser.name || '',
-        email: currentUser.email || '',
-        phone: currentUser.contact || ''
-      }));
-    }
-  }, []);
-
-  useEffect(() => {
     if (!authService.isAuthenticated()) {
       alert('Please login to book a trek.');
       navigate('/auth');
     }
   }, [navigate]);
+
+   useEffect(() => {
+    const user = authService.getCurrentUser();
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.contact || ''
+      }));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!formData.trek) {
+      setSelectedTrek(null);
+      return;
+    }
+const trek = allTrekData.find(t => t.id === formData.trek);
+    setSelectedTrek(trek || null);
+  }, [formData.trek]);
+
+ 
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -66,20 +79,22 @@ const Booking = () => {
     setError('');
 
     try {
-      const bookingData = {
+      const payload = {
         ...formData,
-        groupSize: parseInt(formData.groupSize),
-        preferredDate: new Date(formData.preferredDate)
+        groupSize: Number(formData.groupSize),
+        preferredDate: formData.preferredDate
       };
-      delete bookingData.agreeTerms; // Remove agreeTerms as it's not needed in backend
+      delete payload.agreeTerms; // Remove agreeTerms as it's not needed in backend
 
-      const response = await bookingService.createBooking(bookingData);
-      console.log('Booking created:', response);
+      await bookingService.createBooking(payload);
+
       toast.success('Thank you for your booking request! We will contact you within 24 hours to confirm.');
       navigate('/');
-    } catch (error) {
-      console.error('Booking error:', error);
-      setError(error.response?.data?.message || 'Failed to submit booking. Please try again.');
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+        'Failed to submit booking. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -156,11 +171,11 @@ const Booking = () => {
                     required
                   >
                     <option value="">Choose a trek</option>
-                    <option value="Everest Base Camp">Everest Base Camp Trek</option>
-                    <option value="Annapurna Circuit">Annapurna Circuit</option>
-                    <option value="Langtang Valley">Langtang Valley Trek</option>
-                    <option value="Manaslu Circuit">Manaslu Circuit</option>
-                    <option value="Upper Mustang">Upper Mustang Trek</option>
+  {allTrekData.map(trek => (
+    <option key={trek.id} value={trek.id}>
+      {trek.title}
+    </option>
+  ))} 
                     <option value="Custom">Custom Trek (Contact us)</option>
                   </select>
                 </div>
@@ -176,7 +191,7 @@ const Booking = () => {
                     <option value="2">2 People</option>
                     <option value="3">3 People</option>
                     <option value="4">4 People</option>
-                    <option value="5+">5+ People</option>
+                    <option value="5">5+ People</option>
                   </select>
                 </div>
               </div>
