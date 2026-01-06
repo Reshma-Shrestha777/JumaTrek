@@ -34,13 +34,11 @@ const AdminRoutes = () => {
           <Route path=":id" element={<TrekDetail />} />
           <Route path="edit/:id" element={<EditTrek />} />
         </Route>
-
         {/* Users Routes */}
         <Route path="users">
           <Route index element={<UsersList />} />
           <Route path=":id" element={<UserDetail />} />
         </Route>
-
         {/* Bookings Routes */}
         <Route path="bookings">
           <Route index element={<BookingsList />} />
