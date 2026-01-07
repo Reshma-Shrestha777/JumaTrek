@@ -48,7 +48,9 @@ export const allTrekData = [
 const AllTreks = () => {
   const location = useLocation();
   const [filteredTreks, setFilteredTreks] = useState(allTrekData);
+  const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState({
+    search: '',
     region: '',
     difficulty: '',
     duration: '',
@@ -71,16 +73,21 @@ const AllTreks = () => {
   // Set initial filters from URL params
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
+    const searchParam = queryParams.get('search') || '';
     const regionParam = queryParams.get('region');
+    
+    const initialFilters = {
+      ...filters,
+      search: searchParam
+    };
+
     if (regionParam) {
       const mappedRegion = regionMapping[regionParam] || regionParam;
-      const initialFilters = {
-        ...filters,
-        region: mappedRegion
-      };
-      setFilters(initialFilters);
-      applyFilters(initialFilters);
+      initialFilters.region = mappedRegion;
     }
+
+    setFilters(initialFilters);
+    applyFilters(initialFilters);
   }, [location.search]);
 
   const handleFilterChange = (e) => {
@@ -120,7 +127,22 @@ const AllTreks = () => {
   };
 
   const applyFilters = (filterValues) => {
-    let result = allTrekData;
+    setIsLoading(true);
+    
+    // Simulate API call delay
+    setTimeout(() => {
+      let result = allTrekData;
+
+    // Apply search filter first
+    if (filterValues.search) {
+      const searchLower = filterValues.search.toLowerCase();
+      result = result.filter(trek => 
+        trek.title.toLowerCase().includes(searchLower) || 
+        (trek.region && trek.region.toLowerCase().includes(searchLower)) ||
+        (trek.highlights && Array.isArray(trek.highlights) && 
+         trek.highlights.some(h => h && h.toLowerCase().includes(searchLower)))
+      );
+    }
 
     if (filterValues.region) {
       result = result.filter(trek => trek.region === filterValues.region);
@@ -146,18 +168,27 @@ const AllTreks = () => {
       result = result.filter(trek => trek.price <= parseInt(filterValues.maxPrice));
     }
 
-    setFilteredTreks(result);
+      setFilteredTreks(result);
+      setIsLoading(false);
+    }, 500);
   };
 
   const clearFilters = () => {
+    setIsLoading(true);
     setFilters({
+      search: '',
       region: '',
       difficulty: '',
       duration: '',
       minPrice: '',
       maxPrice: ''
     });
-    setFilteredTreks(allTrekData);
+    
+    // Simulate API call delay
+    setTimeout(() => {
+      setFilteredTreks(allTrekData);
+      setIsLoading(false);
+    }, 300);
   };
 
   return (
@@ -258,7 +289,14 @@ const AllTreks = () => {
             <h3>Showing {filteredTreks.length} of {allTrekData.length} Treks</h3>
           </div>
 
-          {filteredTreks.length === 0 ? (
+          {isLoading ? (
+            <div className="loading-container" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem 0' }}>
+              <div className="loading-spinner">
+                <i className="fas fa-mountain fa-spin" style={{ fontSize: '3rem', color: '#1e88e5', marginBottom: '1rem' }}></i>
+                <p>Finding your perfect trek...</p>
+              </div>
+            </div>
+          ) : filteredTreks.length === 0 ? (
             <div className="no-results">
               <i className="fas fa-mountain text-muted-large mb-16"></i>
               <h3>No Treks Found</h3>

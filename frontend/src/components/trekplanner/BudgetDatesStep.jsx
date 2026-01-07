@@ -1,15 +1,15 @@
 import React from 'react';
-import { Row, Col, Card, Form, Select, DatePicker, InputNumber, Typography, Divider, Slider } from 'antd';
+import { Row, Col, Card, Form, Select, DatePicker, InputNumber, Typography, Divider, Slider, Tooltip } from 'antd';
 import { DollarOutlined, CalendarOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
 const { Option } = Select;
 const { Text, Title, Paragraph } = Typography;
 
-const BudgetDatesStep = ({ 
-  formData, 
-  onInputChange, 
-  budgetRanges 
+const BudgetDatesStep = ({
+  formData,
+  onInputChange,
+  budgetRanges
 }) => {
   const calculateEndDate = (startDate, duration) => {
     if (!startDate) return null;
@@ -90,23 +90,31 @@ const BudgetDatesStep = ({
 
   return (
     <div className="step-content">
-      <h3 className="text-center text-xl font-semibold mb-6">
-        <DollarOutlined className="mr-2" />
-        Budget & Dates
-      </h3>
-      
-      <Row gutter={[24, 16]}>
+      <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        <Typography.Title level={3}>
+          <DollarOutlined style={{ marginRight: '8px', color: '#1a73e8' }} />
+          Budget & Dates
+        </Typography.Title>
+        <Text type="secondary">
+          Plan your investment and schedule
+        </Text>
+      </div>
+
+      <Row gutter={[32, 24]}>
         <Col xs={24} md={12}>
-          <Card title="Budget Planning" className="mb-6">
+          <Card className="step-card" title="Budget Planning" style={{ marginBottom: '24px' }}>
             <Form.Item
               label="Select Your Budget Range (per person)"
               name="budgetRange"
+              tooltip={{ title: "Choose a budget range that suits you", icon: <InfoCircleOutlined className="tooltip-icon" /> }}
               rules={[{ required: true, message: 'Please select a budget range' }]}
             >
               <Select
                 onChange={handleBudgetRangeChange}
                 value={formData.budgetRange}
                 placeholder="Select your budget range"
+                size="large"
+                style={{ width: '100%' }}
               >
                 {budgetRanges.map(range => (
                   <Option key={range.value} value={range.value}>
@@ -115,223 +123,242 @@ const BudgetDatesStep = ({
                 ))}
               </Select>
             </Form.Item>
-            
+
             {formData.budgetRange && (
-              <div className="mt-4">
-                <div className="flex justify-between items-center mb-2">
+              <div style={{ marginTop: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <Text strong>Your Budget:</Text>
-                  <Text strong className="text-lg">${formData.budgetAmount}</Text>
+                  <Text strong style={{ fontSize: '18px', color: '#1a73e8' }}>${formData.budgetAmount}</Text>
                 </div>
-                
+
                 <Slider
                   min={budgetRanges.find(r => r.value === formData.budgetRange).min}
                   max={budgetRanges.find(r => r.value === formData.budgetRange).max}
                   value={formData.budgetAmount}
                   onChange={(value) => onInputChange('budgetAmount', value)}
                   tipFormatter={(value) => `$${value}`}
-                  className="mb-6"
+                  style={{ marginBottom: '24px' }}
                 />
-                
-                <div className="bg-gray-50 p-4 rounded">
-                  <Text strong>Budget Breakdown:</Text>
-                  <div className="mt-2 space-y-2">
-                    <div className="flex justify-between">
+
+                <div style={{ backgroundColor: '#f9fafb', padding: '16px', borderRadius: '8px' }}>
+                  <Text strong style={{ display: 'block', marginBottom: '8px' }}>Budget Breakdown:</Text>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span>Accommodation:</span>
                       <span>${Math.round(formData.budgetAmount * 0.3)}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span>Meals:</span>
                       <span>${Math.round(formData.budgetAmount * 0.2)}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span>Permits & Fees:</span>
                       <span>${Math.round(formData.budgetAmount * 0.15)}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span>Guide & Porter:</span>
                       <span>${Math.round(formData.budgetAmount * 0.25)}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span>Transportation:</span>
                       <span>${Math.round(formData.budgetAmount * 0.1)}</span>
                     </div>
-                    <Divider className="my-2" />
-                    <div className="flex justify-between font-semibold">
+                    <Divider style={{ margin: '8px 0' }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600 }}>
                       <span>Total (per person):</span>
                       <span>${formData.budgetAmount}</span>
                     </div>
                   </div>
-                  <Text type="secondary" className="text-xs mt-2 block">
+                  <Text type="secondary" style={{ fontSize: '11px', marginTop: '8px', display: 'block' }}>
                     * This is an estimate. Final pricing will be confirmed based on your exact requirements.
                   </Text>
                 </div>
               </div>
             )}
           </Card>
-          
-          <Card title="Tentative Dates">
-            <Form.Item
-              label="Preferred Start Date"
-              name="startDate"
-              rules={[{ required: true, message: 'Please select a start date' }]}
-            >
-              <DatePicker 
-                style={{ width: '100%' }}
-                onChange={handleDateChange}
-                disabledDate={(current) => {
-                  return current && current < dayjs().startOf('day');
-                }}
-              />
-            </Form.Item>
-            
-            <Form.Item
-              label="Trek Duration"
-              name="duration"
-              rules={[{ required: true, message: 'Please select duration' }]}
-            >
-              <Select
-                onChange={(value) => handleDurationChange(value)}
-                value={formData.duration}
-                placeholder="Select trek duration"
-              >
-                <Option value={7}>7 days</Option>
-                <Option value={10}>10 days</Option>
-                <Option value={14}>14 days</Option>
-                <Option value={21}>21 days</Option>
-                <Option value={0}>Custom duration</Option>
-              </Select>
-            </Form.Item>
-            
-            {formData.duration === 0 && (
+        </Col>
+
+        <Col xs={24} md={12}>
+          <div style={{ position: 'sticky', top: '24px' }}>
+            <Card className="step-card" title="Tentative Dates" style={{ marginBottom: '24px' }}>
               <Form.Item
-                label="Custom Duration (days)"
-                name="customDuration"
-                rules={[{ required: true, message: 'Please enter duration' }]}
+                label="Preferred Start Date"
+                name="startDate"
+                tooltip={{ title: "Select when you want to start your trek", icon: <InfoCircleOutlined className="tooltip-icon" /> }}
+                rules={[{ required: true, message: 'Please select a start date' }]}
               >
-                <InputNumber 
-                  min={1} 
-                  max={30} 
+                <DatePicker
                   style={{ width: '100%' }}
-                  onChange={(value) => handleDurationChange(value)}
-                  placeholder="Enter number of days"
+                  onChange={handleDateChange}
+                  disabledDate={(current) => {
+                    return current && current < dayjs().startOf('day');
+                  }}
+                  size="large"
                 />
               </Form.Item>
-            )}
-            
-            {formData.startDate && formData.duration > 0 && (
-              <div className="mt-4 p-4 bg-blue-50 rounded">
-                <div className="flex items-center mb-2">
-                  <CalendarOutlined className="mr-2 text-blue-500" />
-                  <Text strong>Your Trek Dates:</Text>
-                </div>
-                <div className="ml-6">
-                  {dayjs(formData.startDate).format('dddd, MMMM D, YYYY')}
-                  <br />
-                  <span className="ml-4">to</span> {formData.endDate.format('dddd, MMMM D, YYYY')}
-                  <div className="mt-1 text-sm text-gray-600">
-                    ({formData.duration} days total)
+
+              <Form.Item
+                label="Trek Duration"
+                name="duration"
+                tooltip={{ title: "How many days for the trek?", icon: <InfoCircleOutlined className="tooltip-icon" /> }}
+                rules={[{ required: true, message: 'Please select duration' }]}
+              >
+                <Select
+                  onChange={(value) => handleDurationChange(value)}
+                  value={formData.duration}
+                  placeholder="Select trek duration"
+                  size="large"
+                  style={{ width: '100%' }}
+                >
+                  <Option value={7}>7 days</Option>
+                  <Option value={10}>10 days</Option>
+                  <Option value={14}>14 days</Option>
+                  <Option value={21}>21 days</Option>
+                  <Option value={0}>Custom duration</Option>
+                </Select>
+              </Form.Item>
+
+              {formData.duration === 0 && (
+                <Form.Item
+                  label="Custom Duration (days)"
+                  name="customDuration"
+                  rules={[{ required: true, message: 'Please enter duration' }]}
+                >
+                  <InputNumber
+                    min={1}
+                    max={30}
+                    style={{ width: '100%' }}
+                    onChange={(value) => handleDurationChange(value)}
+                    placeholder="Enter number of days"
+                    size="large"
+                  />
+                </Form.Item>
+              )}
+
+              {formData.startDate && formData.duration > 0 && (
+                <div style={{
+                  marginTop: '16px',
+                  padding: '16px',
+                  backgroundColor: '#eff6ff',
+                  borderRadius: '8px',
+                  border: '1px solid #bfdbfe'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                    <CalendarOutlined style={{ marginRight: '8px', color: '#2563eb' }} />
+                    <Text strong>Your Trek Dates:</Text>
                   </div>
-                </div>
-              </div>
-            )}
-            
-            {formData.startDate && (
-              <div className="mt-4 p-4 bg-green-50 rounded">
-                <div className="flex items-center">
-                  <InfoCircleOutlined className="mr-2 text-green-500" />
-                  <Text strong>Seasonal Information:</Text>
-                </div>
-                <div className="mt-2">
-                  <div className="font-medium">{seasonInfo.icon} {seasonInfo.name} Season ({seasonInfo.months})</div>
-                  <div className="text-sm mt-1">{seasonInfo.description}</div>
-                  
-                  <div className="grid grid-cols-2 gap-4 mt-3">
-                    <div>
-                      <div className="font-medium text-green-700">Pros:</div>
-                      <div className="text-sm">{seasonInfo.pros}</div>
+                  <div style={{ marginLeft: '24px' }}>
+                    {dayjs(formData.startDate).format('dddd, MMMM D, YYYY')}
+                    <br />
+                    <span style={{ marginLeft: '16px' }}>to</span> {formData.endDate.format('dddd, MMMM D, YYYY')}
+                    <div style={{ marginTop: '4px', fontSize: '13px', color: '#4b5563' }}>
+                      ({formData.duration} days total)
                     </div>
-                    <div>
-                      <div className="font-medium text-red-700">Considerations:</div>
-                      <div className="text-sm">{seasonInfo.cons}</div>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-2 text-sm">
-                    <span className="font-medium">Best for:</span> {seasonInfo.bestFor}
                   </div>
                 </div>
+              )}
+
+              {formData.startDate && (
+                <div style={{
+                  marginTop: '16px',
+                  padding: '16px',
+                  backgroundColor: '#f0fdf4',
+                  borderRadius: '8px',
+                  border: '1px solid #86efac'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <InfoCircleOutlined style={{ marginRight: '8px', color: '#16a34a' }} />
+                    <Text strong>Seasonal Information:</Text>
+                  </div>
+                  <div style={{ marginTop: '8px' }}>
+                    <div style={{ fontWeight: 500 }}>{seasonInfo.icon} {seasonInfo.name} Season ({seasonInfo.months})</div>
+                    <div style={{ fontSize: '13px', marginTop: '4px' }}>{seasonInfo.description}</div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '12px' }}>
+                      <div>
+                        <div style={{ fontWeight: 500, color: '#15803d' }}>Pros:</div>
+                        <div style={{ fontSize: '13px' }}>{seasonInfo.pros}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 500, color: '#b91c1c' }}>Considerations:</div>
+                        <div style={{ fontSize: '13px' }}>{seasonInfo.cons}</div>
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: '8px', fontSize: '13px' }}>
+                      <span style={{ fontWeight: 500 }}>Best for:</span> {seasonInfo.bestFor}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </Card>
+            <Card
+              className="step-card"
+              title="What's Included"
+              style={{ height: '100%' }}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <div>
+                  <Typography.Title level={5} style={{ fontSize: '16px', marginBottom: '8px' }}>Included in Your Trek:</Typography.Title>
+                  <ul style={{ paddingLeft: '20px', marginTop: '0', marginBottom: '0', color: '#4b5563', fontSize: '14px', listStyle: 'disc' }}>
+                    <li>All necessary trekking permits and TIMS card</li>
+                    <li>Accommodation during the trek (twin sharing)</li>
+                    <li>All meals during the trek (breakfast, lunch, dinner)</li>
+                    <li>Experienced, English-speaking trekking guide</li>
+                    <li>Porter service (1 porter for 2 trekkers, max 15kg per trekker)</li>
+                    <li>All ground transportation as per itinerary</li>
+                    <li>First aid kit and oximeter</li>
+                    <li>All government taxes and service charges</li>
+                  </ul>
+                </div>
+
+                <Divider style={{ margin: '8px 0' }} />
+
+                <div>
+                  <Typography.Title level={5} style={{ fontSize: '16px', marginBottom: '8px' }}>Not Included:</Typography.Title>
+                  <ul style={{ paddingLeft: '20px', marginTop: '0', marginBottom: '0', color: '#4b5563', fontSize: '14px', listStyle: 'disc' }}>
+                    <li>International flights to/from Nepal</li>
+                    <li>Nepal entry visa fee</li>
+                    <li>Travel insurance (mandatory)</li>
+                    <li>Personal expenses (alcoholic drinks, hot showers, battery charging, WiFi, etc.)</li>
+                    <li>Tips for guide and porter</li>
+                    <li>Meals in Kathmandu (except breakfast)</li>
+                    <li>Any other expenses not mentioned in the included section</li>
+                  </ul>
+                </div>
+
+                <Divider style={{ margin: '8px 0' }} />
+
+                <div style={{ backgroundColor: '#fefce8', padding: '16px', borderRadius: '8px', border: '1px solid #fde047' }}>
+                  <Typography.Title level={5} style={{ fontSize: '15px', marginBottom: '8px', color: '#854d0e' }}>Payment & Cancellation Policy</Typography.Title>
+                  <ul style={{ paddingLeft: '20px', marginTop: '0', marginBottom: '0', color: '#854d0e', fontSize: '13px' }}>
+                    <li>20% deposit required to confirm booking</li>
+                    <li>Full payment due 30 days before departure</li>
+                    <li>Cancellation 60+ days before departure: Full refund</li>
+                    <li>Cancellation 30-60 days before: 50% refund</li>
+                    <li>Cancellation less than 30 days: No refund</li>
+                    <li>Unused services are non-refundable</li>
+                  </ul>
+                  <Text type="secondary" style={{ fontSize: '11px', marginTop: '8px', display: 'block', color: '#a16207' }}>
+                    * Cancellation policy is subject to change. Please verify before booking.
+                  </Text>
+                </div>
+
+                <div style={{ backgroundColor: '#eff6ff', padding: '16px', borderRadius: '8px', border: '1px solid #bfdbfe' }}>
+                  <Typography.Title level={5} style={{ fontSize: '15px', marginBottom: '8px', color: '#1e40af' }}>Flexible Booking Options</Typography.Title>
+                  <Paragraph style={{ marginBottom: '4px', fontSize: '14px', color: '#1e40af' }}>
+                    We understand that plans can change. Ask us about our flexible booking options including:
+                  </Paragraph>
+                  <ul style={{ paddingLeft: '20px', marginTop: '0', marginBottom: '0', color: '#1e40af', fontSize: '13px' }}>
+                    <li>Free date changes up to 30 days before departure</li>
+                    <li>Low deposit to secure your booking</li>
+                    <li>Payment plans available</li>
+                    <li>Group discounts for 4+ people</li>
+                  </ul>
+                </div>
               </div>
-            )}
-          </Card>
-        </Col>
-        
-        <Col xs={24} md={12}>
-          <Card 
-            title="What's Included" 
-            className="h-full"
-            bordered={false}
-          >
-            <div className="space-y-6">
-              <div>
-                <Title level={5} className="mb-2">Included in Your Trek:</Title>
-                <ul className="list-disc pl-5 space-y-2">
-                  <li>All necessary trekking permits and TIMS card</li>
-                  <li>Accommodation during the trek (twin sharing)</li>
-                  <li>All meals during the trek (breakfast, lunch, dinner)</li>
-                  <li>Experienced, English-speaking trekking guide</li>
-                  <li>Porter service (1 porter for 2 trekkers, max 15kg per trekker)</li>
-                  <li>All ground transportation as per itinerary</li>
-                  <li>First aid kit and oximeter</li>
-                  <li>All government taxes and service charges</li>
-                </ul>
-              </div>
-              
-              <Divider className="my-2" />
-              
-              <div>
-                <Title level={5} className="mb-2">Not Included:</Title>
-                <ul className="list-disc pl-5 space-y-2">
-                  <li>International flights to/from Nepal</li>
-                  <li>Nepal entry visa fee</li>
-                  <li>Travel insurance (mandatory)</li>
-                  <li>Personal expenses (alcoholic drinks, hot showers, battery charging, WiFi, etc.)</li>
-                  <li>Tips for guide and porter</li>
-                  <li>Meals in Kathmandu (except breakfast)</li>
-                  <li>Any other expenses not mentioned in the included section</li>
-                </ul>
-              </div>
-              
-              <Divider className="my-2" />
-              
-              <div className="bg-yellow-50 p-4 rounded">
-                <Title level={5} className="mb-2">Payment & Cancellation Policy</Title>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>20% deposit required to confirm booking</li>
-                  <li>Full payment due 30 days before departure</li>
-                  <li>Cancellation 60+ days before departure: Full refund</li>
-                  <li>Cancellation 30-60 days before: 50% refund</li>
-                  <li>Cancellation less than 30 days: No refund</li>
-                  <li>Unused services are non-refundable</li>
-                </ul>
-                <Text type="secondary" className="text-xs mt-2 block">
-                  * We recommend purchasing travel insurance that covers trip cancellation.
-                </Text>
-              </div>
-              
-              <div className="bg-blue-50 p-4 rounded mt-4">
-                <Title level={5} className="mb-2">Flexible Booking Options</Title>
-                <Paragraph>
-                  We understand that plans can change. Ask us about our flexible booking options including:
-                </Paragraph>
-                <ul className="list-disc pl-5 mt-1 space-y-1">
-                  <li>Free date changes up to 30 days before departure</li>
-                  <li>Low deposit to secure your booking</li>
-                  <li>Payment plans available</li>
-                  <li>Group discounts for 4+ people</li>
-                </ul>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
         </Col>
       </Row>
     </div>

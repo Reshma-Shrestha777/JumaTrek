@@ -1,47 +1,59 @@
 import React from 'react';
-import { Row, Col, Card, Form, Checkbox, Typography, Divider, Select } from 'antd';
-import { CarOutlined, SafetyOutlined, HeartOutlined, ToolOutlined } from '@ant-design/icons';
+import { Row, Col, Card, Form, Checkbox, Typography, Divider, Select, Tooltip } from 'antd';
+import { CarOutlined, SafetyOutlined, HeartOutlined, ToolOutlined, InfoCircleOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
 const { Text, Paragraph } = Typography;
 
-const ServicesTransportStep = ({ 
-  formData, 
-  onInputChange, 
-  transportOptions 
+const ServicesTransportStep = ({
+  formData,
+  onInputChange,
+  transportOptions
 }) => {
   return (
     <div className="step-content">
-      <h3 className="text-center text-xl font-semibold mb-6">
-        <CarOutlined className="mr-2" />
-        Services & Transport
-      </h3>
-      
-      <Row gutter={[24, 16]}>
+      <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        <Typography.Title level={3}>
+          <CarOutlined style={{ marginRight: '8px', color: '#1a73e8' }} />
+          Services & Transport
+        </Typography.Title>
+        <Text type="secondary">
+          Customize your support team and transportation
+        </Text>
+      </div>
+
+      <Row gutter={[32, 24]}>
         <Col xs={24} md={12}>
-          <Card title="Guides & Porters" className="mb-6">
-            <Form.Item 
+          <Card className="step-card" title="Guides & Porters" style={{ marginBottom: '24px' }}>
+            <Form.Item
               name="guideRequired"
               valuePropName="checked"
-              className="mb-4"
+              style={{ marginBottom: '16px' }}
             >
-              <Checkbox 
+              <Checkbox
                 checked={formData.guideRequired}
                 onChange={(e) => onInputChange('guideRequired', e.target.checked)}
               >
                 <div>
-                  <div className="font-medium">Professional Guide</div>
-                  <Text type="secondary" className="text-sm">
+                  <div style={{ fontWeight: 500 }}>Professional Guide</div>
+                  <Text type="secondary" style={{ fontSize: '13px' }}>
                     Experienced, English-speaking guide (Highly Recommended)
                   </Text>
                 </div>
               </Checkbox>
             </Form.Item>
-            
+
             {formData.guideRequired && (
-              <div className="ml-6 mb-4 p-3 bg-blue-50 rounded">
+              <div style={{
+                marginLeft: '24px',
+                marginBottom: '16px',
+                padding: '12px',
+                backgroundColor: '#eff6ff',
+                borderRadius: '8px',
+                fontSize: '13px'
+              }}>
                 <Text strong>Guide Services Include:</Text>
-                <ul className="list-disc pl-5 mt-1 space-y-1">
+                <ul style={{ paddingLeft: '20px', marginTop: '4px', marginBottom: 0, color: '#4b5563' }}>
                   <li>Route navigation and local knowledge</li>
                   <li>Cultural and natural history information</li>
                   <li>Assistance with teahouse bookings</li>
@@ -50,220 +62,243 @@ const ServicesTransportStep = ({
                 </ul>
               </div>
             )}
-            
-            <Form.Item 
+
+            <Form.Item
               name="porterRequired"
               valuePropName="checked"
-              className="mt-6 mb-4"
+              style={{ marginTop: '24px', marginBottom: '16px' }}
             >
-              <Checkbox 
+              <Checkbox
                 checked={formData.porterRequired}
                 onChange={(e) => onInputChange('porterRequired', e.target.checked)}
               >
                 <div>
-                  <div className="font-medium">Porter Service</div>
-                  <Text type="secondary" className="text-sm">
+                  <div style={{ fontWeight: 500 }}>Porter Service</div>
+                  <Text type="secondary" style={{ fontSize: '13px' }}>
                     1 porter for every 2 trekkers (max 15kg per trekker)
                   </Text>
                 </div>
               </Checkbox>
             </Form.Item>
-            
+
             {formData.porterRequired && (
-              <div className="ml-6 p-3 bg-green-50 rounded">
+              <div style={{
+                marginLeft: '24px',
+                padding: '12px',
+                backgroundColor: '#f0fdf4',
+                borderRadius: '8px',
+                fontSize: '13px'
+              }}>
                 <Text strong>Porter Information:</Text>
-                <ul className="list-disc pl-5 mt-1 space-y-1">
+                <ul style={{ paddingLeft: '20px', marginTop: '4px', marginBottom: 0, color: '#4b5563' }}>
                   <li>Maximum load: 25kg per porter (including their own gear)</li>
                   <li>Provided with proper clothing and equipment</li>
                   <li>Insured for medical and emergency evacuation</li>
                   <li>Fair wages and working conditions</li>
                 </ul>
-                <Text type="secondary" className="text-xs mt-2 block">
+                <Text type="secondary" style={{ fontSize: '11px', marginTop: '8px', display: 'block' }}>
                   * We strictly follow IPPG (International Porter Protection Group) guidelines
                 </Text>
               </div>
             )}
           </Card>
-          
-          <Card title="Transportation" className="mb-6">
-            <Form.Item
-              label="Transportation Preferences"
-              name="transportation"
-              rules={[{ required: true, message: 'Please select at least one option' }]}
-            >
-              <Select
-                mode="multiple"
-                placeholder="Select preferred transportation methods"
-                onChange={(values) => onInputChange('transportation', values)}
-                value={formData.transportation}
-                className="w-full"
+
+        </Col>
+
+        <Col xs={24} md={12}>
+          <div style={{ position: 'sticky', top: '24px' }}>
+            <Card className="step-card" title="Transportation" style={{ marginBottom: '24px' }}>
+              <Form.Item
+                label="Transportation Preferences"
+                name="transportation"
+                tooltip={{ title: "How would you like to travel to and from the trek starting point?", icon: <InfoCircleOutlined className="tooltip-icon" /> }}
+                rules={[{ required: true, message: 'Please select at least one option' }]}
               >
-                {transportOptions.map(option => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-            
-            <div className="bg-blue-50 p-4 rounded mt-4">
-              <Text strong>Transportation Notes:</Text>
-              <ul className="list-disc pl-5 mt-1 space-y-1">
-                {formData.transportation?.includes('flight') && (
-                  <li>Domestic flights are weather-dependent and may be delayed or canceled</li>
-                )}
-                {formData.transportation?.includes('helicopter') && (
-                  <li>Helicopter services are subject to weather conditions and availability</li>
-                )}
-                <li>Road conditions in mountainous areas can be challenging</li>
-                <li>Travel times are approximate and may vary</li>
-              </ul>
-            </div>
-          </Card>
-          
-          <Card title="Additional Services">
-            <Form.Item 
-              name="insuranceRequired"
-              valuePropName="checked"
-              className="mb-4"
-            >
-              <Checkbox 
-                checked={formData.insuranceRequired}
-                onChange={(e) => onInputChange('insuranceRequired', e.target.checked)}
+                <Select
+                  mode="multiple"
+                  placeholder="Select preferred transportation methods"
+                  onChange={(values) => onInputChange('transportation', values)}
+                  value={formData.transportation}
+                  style={{ width: '100%' }}
+                  size="large"
+                >
+                  {transportOptions.map(option => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              <div style={{ backgroundColor: '#eff6ff', padding: '16px', borderRadius: '8px', marginTop: '16px' }}>
+                <Text strong style={{ color: '#1e40af' }}>Transportation Notes:</Text>
+                <ul style={{ paddingLeft: '20px', marginTop: '4px', marginBottom: 0, fontSize: '13px', color: '#4b5563' }}>
+                  {formData.transportation?.includes('flight') && (
+                    <li>Domestic flights are weather-dependent and may be delayed or canceled</li>
+                  )}
+                  {formData.transportation?.includes('helicopter') && (
+                    <li>Helicopter services are subject to weather conditions and availability</li>
+                  )}
+                  <li>Road conditions in mountainous areas can be challenging</li>
+                  <li>Travel times are approximate and may vary</li>
+                </ul>
+              </div>
+            </Card>
+
+            <Card className="step-card" title="Additional Services" style={{ marginBottom: '24px' }}>
+              <Form.Item
+                name="insuranceRequired"
+                valuePropName="checked"
+                style={{ marginBottom: '16px' }}
               >
-                <div>
-                  <div className="font-medium">Travel Insurance</div>
-                  <Text type="secondary" className="text-sm">
-                    Emergency medical and evacuation coverage (Required for high-altitude treks)
+                <Checkbox
+                  checked={formData.insuranceRequired}
+                  onChange={(e) => onInputChange('insuranceRequired', e.target.checked)}
+                >
+                  <div>
+                    <div style={{ fontWeight: 500 }}>Travel Insurance</div>
+                    <Text type="secondary" style={{ fontSize: '13px' }}>
+                      Emergency medical and evacuation coverage (Required for high-altitude treks)
+                    </Text>
+                  </div>
+                </Checkbox>
+              </Form.Item>
+
+              {formData.insuranceRequired && (
+                <div style={{
+                  marginLeft: '24px',
+                  marginBottom: '16px',
+                  padding: '12px',
+                  backgroundColor: '#fefce8',
+                  borderRadius: '8px',
+                  fontSize: '13px'
+                }}>
+                  <Text strong>Insurance Requirements:</Text>
+                  <ul style={{ paddingLeft: '20px', marginTop: '4px', marginBottom: 0, color: '#4b5563' }}>
+                    <li>Minimum coverage: $100,000 for emergency evacuation</li>
+                    <li>Must cover trekking up to 6,000m</li>
+                    <li>24/7 emergency assistance</li>
+                    <li>Trip cancellation and interruption coverage recommended</li>
+                  </ul>
+                </div>
+              )}
+
+              <Form.Item
+                name="equipmentRental"
+                valuePropName="checked"
+                style={{ marginTop: '16px' }}
+              >
+                <Checkbox
+                  checked={formData.equipmentRental}
+                  onChange={(e) => onInputChange('equipmentRental', e.target.checked)}
+                >
+                  Rent Trekking Equipment
+                </Checkbox>
+              </Form.Item>
+
+              {formData.equipmentRental && (
+                <div style={{
+                  marginLeft: '24px',
+                  marginTop: '8px',
+                  padding: '12px',
+                  backgroundColor: '#f9fafb',
+                  borderRadius: '8px'
+                }}>
+                  <Text strong style={{ display: 'block', marginBottom: '8px' }}>Available for Rent:</Text>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    <div>
+                      <Checkbox>Sleeping Bag (-20°C)</Checkbox>
+                      <div style={{ fontSize: '11px', color: '#6b7280', marginLeft: '24px' }}>$3/day</div>
+                    </div>
+                    <div>
+                      <Checkbox>Down Jacket</Checkbox>
+                      <div style={{ fontSize: '11px', color: '#6b7280', marginLeft: '24px' }}>$2/day</div>
+                    </div>
+                    <div>
+                      <Checkbox>Trekking Poles (pair)</Checkbox>
+                      <div style={{ fontSize: '11px', color: '#6b7280', marginLeft: '24px' }}>$2/day</div>
+                    </div>
+                    <div>
+                      <Checkbox>Duffel Bag (80L)</Checkbox>
+                      <div style={{ fontSize: '11px', color: '#6b7280', marginLeft: '24px' }}>$1/day</div>
+                    </div>
+                  </div>
+                  <Text type="secondary" style={{ fontSize: '11px', marginTop: '8px', display: 'block' }}>
+                    * Equipment is subject to availability. Please confirm your rental items in advance.
                   </Text>
                 </div>
-              </Checkbox>
-            </Form.Item>
-            
-            {formData.insuranceRequired && (
-              <div className="ml-6 mb-4 p-3 bg-yellow-50 rounded">
-                <Text strong>Insurance Requirements:</Text>
-                <ul className="list-disc pl-5 mt-1 space-y-1">
-                  <li>Minimum coverage: $100,000 for emergency evacuation</li>
-                  <li>Must cover trekking up to 6,000m</li>
-                  <li>24/7 emergency assistance</li>
-                  <li>Trip cancellation and interruption coverage recommended</li>
-                </ul>
-              </div>
-            )}
-            
-            <Form.Item 
-              name="equipmentRental"
-              valuePropName="checked"
-              className="mt-4"
+              )}
+            </Card>
+            <Card
+              className="step-card"
+              title="Why Choose Our Services?"
+              style={{ height: '100%' }}
             >
-              <Checkbox 
-                checked={formData.equipmentRental}
-                onChange={(e) => onInputChange('equipmentRental', e.target.checked)}
-              >
-                Rent Trekking Equipment
-              </Checkbox>
-            </Form.Item>
-            
-            {formData.equipmentRental && (
-              <div className="ml-6 mt-2 p-3 bg-gray-50 rounded">
-                <Text strong>Available for Rent:</Text>
-                <div className="grid grid-cols-2 gap-2 mt-2">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                  <SafetyOutlined style={{ color: '#3b82f6', fontSize: '20px', marginRight: '12px', marginTop: '4px' }} />
                   <div>
-                    <Checkbox>Sleeping Bag (-20°C)</Checkbox>
-                    <div className="text-xs text-gray-500 ml-6">$3/day</div>
-                  </div>
-                  <div>
-                    <Checkbox>Down Jacket</Checkbox>
-                    <div className="text-xs text-gray-500 ml-6">$2/day</div>
-                  </div>
-                  <div>
-                    <Checkbox>Trekking Poles (pair)</Checkbox>
-                    <div className="text-xs text-gray-500 ml-6">$2/day</div>
-                  </div>
-                  <div>
-                    <Checkbox>Duffel Bag (80L)</Checkbox>
-                    <div className="text-xs text-gray-500 ml-6">$1/day</div>
+                    <Text strong style={{ fontSize: '16px' }}>Safety First</Text>
+                    <Paragraph style={{ marginTop: '4px', marginBottom: 0, color: '#4b5563' }}>
+                      Our guides are trained in wilderness first aid and carry comprehensive first aid kits.
+                      We monitor altitude sickness symptoms and have emergency evacuation plans in place.
+                    </Paragraph>
                   </div>
                 </div>
-                <Text type="secondary" className="text-xs mt-2 block">
-                  * Equipment is subject to availability. Please confirm your rental items in advance.
-                </Text>
+
+                <Divider style={{ margin: '8px 0' }} />
+
+                <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                  <HeartOutlined style={{ color: '#ef4444', fontSize: '20px', marginRight: '12px', marginTop: '4px' }} />
+                  <div>
+                    <Text strong style={{ fontSize: '16px' }}>Responsible Tourism</Text>
+                    <Paragraph style={{ marginTop: '4px', marginBottom: 0, color: '#4b5563' }}>
+                      We are committed to responsible tourism practices that benefit local communities and
+                      minimize environmental impact. We follow Leave No Trace principles and ensure fair
+                      treatment and proper equipment for all our staff.
+                    </Paragraph>
+                  </div>
+                </div>
+
+                <Divider style={{ margin: '8px 0' }} />
+
+                <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                  <ToolOutlined style={{ color: '#f97316', fontSize: '20px', marginRight: '12px', marginTop: '4px' }} />
+                  <div>
+                    <Text strong style={{ fontSize: '16px' }}>Quality Equipment</Text>
+                    <Paragraph style={{ marginTop: '4px', marginBottom: 0, color: '#4b5563' }}>
+                      We use high-quality, well-maintained equipment for all our treks. Tents, sleeping bags,
+                      and other gear are regularly inspected and replaced as needed to ensure your comfort and safety.
+                    </Paragraph>
+                  </div>
+                </div>
+
+                <Divider style={{ margin: '8px 0' }} />
+
+                <div style={{ backgroundColor: '#fef3c7', padding: '16px', borderRadius: '8px', border: '1px solid #fcd34d' }}>
+                  <Text strong style={{ color: '#d97706' }}>Important Notes:</Text>
+                  <ul style={{ paddingLeft: '20px', marginTop: '8px', marginBottom: 0, fontSize: '13px', color: '#4b5563' }}>
+                    <li>Travel insurance with emergency evacuation coverage is mandatory for all treks above 3,000m</li>
+                    <li>Porter weight limit is strictly 25kg per porter (including their own gear)</li>
+                    <li>We provide one guide for every 4-6 trekkers (smaller groups available)</li>
+                    <li>All guides speak English and local languages</li>
+                    <li>24/7 support from our local office in Kathmandu</li>
+                  </ul>
+                </div>
+
+                <div style={{ backgroundColor: '#eff6ff', padding: '16px', borderRadius: '8px', border: '1px solid #bfdbfe' }}>
+                  <Text strong style={{ color: '#1d4ed8' }}>Need Assistance?</Text>
+                  <Paragraph style={{ marginTop: '4px', marginBottom: 0, fontSize: '14px', color: '#4b5563' }}>
+                    Our team is available to help you choose the right services for your trek.
+                    Contact us for personalized recommendations based on your specific needs and preferences.
+                  </Paragraph>
+                </div>
               </div>
-            )}
-          </Card>
+            </Card>
+          </div>
         </Col>
-        
-        <Col xs={24} md={12}>
-          <Card 
-            title="Why Choose Our Services?" 
-            className="h-full"
-            bordered={false}
-          >
-            <div className="space-y-6">
-              <div className="flex items-start">
-                <SafetyOutlined className="text-blue-500 text-xl mr-3 mt-1" />
-                <div>
-                  <Text strong className="text-lg">Safety First</Text>
-                  <Paragraph className="mt-1">
-                    Our guides are trained in wilderness first aid and carry comprehensive first aid kits. 
-                    We monitor altitude sickness symptoms and have emergency evacuation plans in place.
-                  </Paragraph>
-                </div>
-              </div>
-              
-              <Divider className="my-2" />
-              
-              <div className="flex items-start">
-                <HeartOutlined className="text-red-500 text-xl mr-3 mt-1" />
-                <div>
-                  <Text strong className="text-lg">Responsible Tourism</Text>
-                  <Paragraph className="mt-1">
-                    We are committed to responsible tourism practices that benefit local communities and 
-                    minimize environmental impact. We follow Leave No Trace principles and ensure fair 
-                    treatment and proper equipment for all our staff.
-                  </Paragraph>
-                </div>
-              </div>
-              
-              <Divider className="my-2" />
-              
-              <div className="flex items-start">
-                <ToolOutlined className="text-orange-500 text-xl mr-3 mt-1" />
-                <div>
-                  <Text strong className="text-lg">Quality Equipment</Text>
-                  <Paragraph className="mt-1">
-                    We use high-quality, well-maintained equipment for all our treks. Tents, sleeping bags, 
-                    and other gear are regularly inspected and replaced as needed to ensure your comfort and safety.
-                  </Paragraph>
-                </div>
-              </div>
-              
-              <Divider className="my-2" />
-              
-              <div className="bg-yellow-50 p-4 rounded">
-                <Text strong>Important Notes:</Text>
-                <ul className="list-disc pl-5 mt-2 space-y-1">
-                  <li>Travel insurance with emergency evacuation coverage is mandatory for all treks above 3,000m</li>
-                  <li>Porter weight limit is strictly 25kg per porter (including their own gear)</li>
-                  <li>We provide one guide for every 4-6 trekkers (smaller groups available)</li>
-                  <li>All guides speak English and local languages</li>
-                  <li>24/7 support from our local office in Kathmandu</li>
-                </ul>
-              </div>
-              
-              <div className="bg-blue-50 p-4 rounded mt-4">
-                <Text strong>Need Assistance?</Text>
-                <Paragraph className="mt-1">
-                  Our team is available to help you choose the right services for your trek. 
-                  Contact us for personalized recommendations based on your specific needs and preferences.
-                </Paragraph>
-              </div>
-            </div>
-          </Card>
-        </Col>
-      </Row>
-    </div>
+      </Row >
+    </div >
   );
 };
 

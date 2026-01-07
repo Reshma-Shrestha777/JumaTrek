@@ -8,7 +8,11 @@ const Hero = () => {
 
   const performSearch = (e) => {
     e.preventDefault();
-    navigate('/destinations');
+    if (!searchQuery.trim()) {
+      // Don't navigate if search is empty
+      return;
+    }
+    navigate(`/all-treks?search=${encodeURIComponent(searchQuery.trim())}`);
   };
 
   return (

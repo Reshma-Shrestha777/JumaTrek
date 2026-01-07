@@ -5,6 +5,14 @@ import './DestinationsPage.css';
 import abcImg from '../assets/images/ABC.jpg';
 import manImg from '../assets/images/man.jpg';
 
+// Mapping from URL slugs to actual region names
+const regionMapping = {
+  'everest-region': 'Khumbu',
+  'annapurna-region': 'Annapurna',
+  'langtang-region': 'Langtang',
+  'manaslu-region': 'Manaslu'
+};
+
 const DestinationsPage = () => {
     const regions = [
         {
@@ -56,7 +64,11 @@ const DestinationsPage = () => {
                             <h2 className="region-title">{region.name}</h2>
                             <p className="region-desc">{region.description}</p>
                             <Link
-                                to={`/all-treks?region=${region.slug}`}
+                                to={{
+                                  pathname: '/all-treks',
+                                  search: `?region=${region.slug}`,
+                                  state: { region: regionMapping[region.slug] || region.name }
+                                }}
                                 className="btn-view"
                             >
                                 View Treks <i className="fas fa-arrow-right"></i>
