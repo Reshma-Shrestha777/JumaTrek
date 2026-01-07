@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Table, Card, Tag, Button, Modal, Descriptions, Space, Tooltip, Badge } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Table, Card, Tag, Button, Modal, Descriptions, Space, Tooltip, Badge, message, Select } from 'antd';
 import {
     EyeOutlined,
     CheckCircleOutlined,
@@ -12,66 +12,67 @@ import {
     TeamOutlined,
     DollarOutlined,
     CarOutlined,
-    HomeOutlined
+    HomeOutlined,
+    ReloadOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { adminService } from '../../../services/adminApi';
 
 const CustomRequestList = () => {
+    const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [statusFilter, setStatusFilter] = useState('all');
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState(null);
+    const [updatingId, setUpdatingId] = useState(null);
 
-    // Mock Data
-    const data = [
+    const statusColors = {
+        pending: 'default',
+        reviewed: 'processing',
+        replied: 'processing',
+        confirmed: 'success',
+        archived: 'warning'
+    };
 
-        {
-            key: '3',
-            id: 'REQ-2024-003',
-            clientName: 'Tech Corp Team',
-            email: 'events@techcorp.io',
-            phone: '+977 980-1234567',
-            destination: 'Annapurna Circuit',
-            customDestination: '',
-            startDate: '2024-09-10',
-            duration: 18,
-            groupSize: 12,
-            groupType: 'Corporate',
-            budgetRange: 'Comfort',
-            status: 'confirmed',
-            submittedDate: '2024-05-18',
-            details: {
-                difficulty: 'Moderate',
-                experienceLevel: 'Mixed',
-                fitnessLevel: 'Moderate',
-                accommodation: 'Hotel/Lodge',
-                mealPreferences: ['Mixed', 'Vegan Options'],
-                guideRequired: true,
-                porterRequired: true,
-                transportation: ['Private Bus'],
-                specialRequests: 'Need team building activities included.',
-                emergencyContact: {
-                    name: 'HR Department',
-                    relationship: 'Employer',
-                    phone: '+977 1-4445556'
-                }
-            }
+    const fetchRequests = async () => {
+        setLoading(true);
+        try {
+            const res = await adminService.getCustomTrips(
+                statusFilter === 'all' ? {} : { status: statusFilter }
+            );
+            setRequests(res.data || []);
+        } catch (error) {
+            message.error(error || 'Failed to load custom trip requests');
+        } finally {
+            setLoading(false);
         }
-    ];
+    };
+
+    useEffect(() => {
+        fetchRequests();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [statusFilter]);
 
     const columns = [
         {
             title: 'Request ID',
-            dataIndex: 'id',
             key: 'id',
-            render: (text) => <span style={{ fontWeight: 500 }}>{text}</span>,
+            render: (_, record) => (
+                <span style={{ fontWeight: 500 }}>
+                    {record._id ? `REQ-${record._id.slice(-6).toUpperCase()}` : '—'}
+                </span>
+            ),
         },
         {
             title: 'Client',
-            dataIndex: 'clientName',
-            key: 'clientName',
             render: (text, record) => (
                 <div>
-                    <div style={{ fontWeight: 500 }}>{text}</div>
-                    <div style={{ fontSize: '12px', color: '#888' }}>{record.email}</div>
+                    <div style={{ fontWeight: 500 }}>
+                        {record.contactInfo?.name || record.user?.name || 'N/A'}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#888' }}>
+                        {record.contactInfo?.email || record.user?.email || '—'}
+                    </div>
                 </div>
             ),
         },
@@ -81,7 +82,9 @@ const CustomRequestList = () => {
             render: (_, record) => (
                 <span>
                     <EnvironmentOutlined style={{ marginRight: 6, color: '#1890ff' }} />
-                    {record.destination === 'Custom Route' ? record.customDestination : record.destination}
+                    {record.destination === 'custom_route' || record.destination === 'custom'
+                        ? record.customDestination || 'Custom Route'
+                        : record.customDestination || record.destination}
                 </span>
             ),
         },
@@ -90,8 +93,13 @@ const CustomRequestList = () => {
             key: 'dates',
             render: (_, record) => (
                 <div>
-                    <div><CalendarOutlined style={{ marginRight: 6 }} />{record.startDate}</div>
-                    <div style={{ fontSize: '12px', color: '#888' }}>{record.duration} Days</div>
+                    <div>
+                        <CalendarOutlined style={{ marginRight: 6 }} />
+                        {record.startDate ? dayjs(record.startDate).format('YYYY-MM-DD') : '—'}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#888' }}>
+                        {record.duration || 0} Days
+                    </div>
                 </div>
             ),
         },
@@ -101,33 +109,30 @@ const CustomRequestList = () => {
             render: (_, record) => (
                 <div>
                     <Badge count={record.groupSize} style={{ backgroundColor: '#52c41a' }} />
-                    <span style={{ marginLeft: 8 }}>{record.groupType}</span>
+                    <span style={{ marginLeft: 8 }}>{record.groupType || '—'}</span>
                 </div>
             ),
         },
         {
             title: 'Budget',
-            dataIndex: 'budgetRange',
             key: 'budgetRange',
-            render: (text) => (
-                <Tag color={text === 'Luxury' ? 'gold' : text === 'Budget' ? 'green' : 'blue'}>
-                    {text}
+            render: (_, record) => (
+                <Tag color={record.budgetRange === 'luxury' ? 'gold' : record.budgetRange === 'budget' ? 'green' : 'blue'}>
+                    {record.budgetRange || 'N/A'}
                 </Tag>
             ),
         },
         {
             title: 'Status',
-            dataIndex: 'status',
             key: 'status',
-            render: (status) => {
-                let color = 'default';
+            render: (_, record) => {
+                const status = record.status;
+                const color = statusColors[status] || 'default';
                 let icon = <ClockCircleOutlined />;
 
                 if (status === 'replied') {
-                    color = 'processing';
                     icon = <MailOutlined />;
                 } else if (status === 'confirmed') {
-                    color = 'success';
                     icon = <CheckCircleOutlined />;
                 }
 
@@ -151,6 +156,14 @@ const CustomRequestList = () => {
                     >
                         View
                     </Button>
+                    <Tooltip title="Mark as reviewed">
+                        <Button
+                            size="small"
+                            icon={<CheckCircleOutlined />}
+                            loading={updatingId === record._id}
+                            onClick={() => updateStatus(record._id, 'reviewed')}
+                        />
+                    </Tooltip>
                 </Space>
             ),
         },
@@ -165,19 +178,59 @@ const CustomRequestList = () => {
         setIsModalVisible(false);
     };
 
+    const updateStatus = async (id, status) => {
+        setUpdatingId(id);
+        try {
+            await adminService.updateCustomTripStatus(id, { status });
+            message.success('Status updated');
+            fetchRequests();
+        } catch (error) {
+            message.error(error || 'Failed to update status');
+        } finally {
+            setUpdatingId(null);
+        }
+    };
+
+    const statusFilters = [
+        { value: 'all', label: 'All' },
+        { value: 'pending', label: 'Pending' },
+        { value: 'reviewed', label: 'Reviewed' },
+        { value: 'replied', label: 'Replied' },
+        { value: 'confirmed', label: 'Confirmed' },
+        { value: 'archived', label: 'Archived' },
+    ];
+
     return (
-        <Card title="Custom Trip Requests" bordered={false} className="shadow-md rounded-lg">
+        <Card
+            title="Custom Trip Requests"
+            bordered={false}
+            className="shadow-md rounded-lg"
+            extra={
+                <Space>
+                    <Select
+                        value={statusFilter}
+                        onChange={setStatusFilter}
+                        options={statusFilters}
+                        style={{ width: 140 }}
+                        size="small"
+                    />
+                    <Button icon={<ReloadOutlined />} size="small" onClick={fetchRequests} />
+                </Space>
+            }
+        >
             <Table
+                rowKey="_id"
                 columns={columns}
-                dataSource={data}
+                dataSource={requests}
                 pagination={{ pageSize: 10 }}
+                loading={loading}
             />
 
             <Modal
                 title={
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span>Request Details: {selectedRequest?.id}</span>
-                        <Tag color={selectedRequest?.status === 'confirmed' ? 'green' : 'orange'}>
+                        <span>Request Details: {selectedRequest?._id ? `REQ-${selectedRequest._id.slice(-6).toUpperCase()}` : ''}</span>
+                        <Tag color={statusColors[selectedRequest?.status] || 'orange'}>
                             {selectedRequest?.status?.toUpperCase()}
                         </Tag>
                     </div>
@@ -188,8 +241,14 @@ const CustomRequestList = () => {
                     <Button key="close" onClick={handleModalClose}>
                         Close
                     </Button>,
-                    <Button key="reply" type="primary" icon={<MailOutlined />}>
-                        Reply to Client
+                    <Button
+                        key="reviewed"
+                        type="primary"
+                        icon={<CheckCircleOutlined />}
+                        loading={updatingId === selectedRequest?._id}
+                        onClick={() => updateStatus(selectedRequest._id, 'reviewed')}
+                    >
+                        Mark Reviewed
                     </Button>
                 ]}
                 width={800}
@@ -199,65 +258,73 @@ const CustomRequestList = () => {
 
                         {/* Contact Info Section */}
                         <Descriptions title="Client Information" bordered column={2} size="small">
-                            <Descriptions.Item label="Name" span={2}>{selectedRequest.clientName}</Descriptions.Item>
+                            <Descriptions.Item label="Name" span={2}>{selectedRequest.contactInfo?.name || selectedRequest.user?.name}</Descriptions.Item>
                             <Descriptions.Item label="Email">
-                                <a href={`mailto:${selectedRequest.email}`}>{selectedRequest.email}</a>
+                                <a href={`mailto:${selectedRequest.contactInfo?.email || selectedRequest.user?.email || ''}`}>
+                                    {selectedRequest.contactInfo?.email || selectedRequest.user?.email || '—'}
+                                </a>
                             </Descriptions.Item>
                             <Descriptions.Item label="Phone">
-                                <a href={`tel:${selectedRequest.phone}`}>{selectedRequest.phone}</a>
+                                <a href={`tel:${selectedRequest.contactInfo?.phone || ''}`}>
+                                    {selectedRequest.contactInfo?.phone || '—'}
+                                </a>
                             </Descriptions.Item>
-                            <Descriptions.Item label="Emergency Contact">{selectedRequest.details.emergencyContact.name} ({selectedRequest.details.emergencyContact.relationship})</Descriptions.Item>
-                            <Descriptions.Item label="Emergency Phone">{selectedRequest.details.emergencyContact.phone}</Descriptions.Item>
+                            <Descriptions.Item label="Emergency Contact">
+                                {selectedRequest.contactInfo?.emergencyContact?.name || '—'} ({selectedRequest.contactInfo?.emergencyContact?.relationship || '—'})
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Emergency Phone">
+                                {selectedRequest.contactInfo?.emergencyContact?.phone || '—'}
+                            </Descriptions.Item>
                         </Descriptions>
 
                         {/* Trip Details Section */}
                         <Descriptions title="Trip Specifications" bordered column={2} size="small">
                             <Descriptions.Item label="Destination">
-                                {selectedRequest.destination === 'Custom Route'
-                                    ? `${selectedRequest.destination}: ${selectedRequest.customDestination}`
-                                    : selectedRequest.destination}
+                                {selectedRequest.destination === 'custom_route' || selectedRequest.destination === 'custom'
+                                    ? selectedRequest.customDestination || 'Custom Route'
+                                    : selectedRequest.customDestination || selectedRequest.destination}
                             </Descriptions.Item>
                             <Descriptions.Item label="Dates">
-                                {selectedRequest.startDate} ({selectedRequest.duration} Days)
+                                {selectedRequest.startDate ? dayjs(selectedRequest.startDate).format('YYYY-MM-DD') : '—'} ({selectedRequest.duration || 0} Days)
                             </Descriptions.Item>
-                            <Descriptions.Item label="Group Size">{selectedRequest.groupSize} ({selectedRequest.groupType})</Descriptions.Item>
-                            <Descriptions.Item label="Budget Range">{selectedRequest.budgetRange}</Descriptions.Item>
+                            <Descriptions.Item label="Group Size">{selectedRequest.groupSize} ({selectedRequest.groupType || 'N/A'})</Descriptions.Item>
+                            <Descriptions.Item label="Budget Range">{selectedRequest.budgetRange || '—'}</Descriptions.Item>
 
-                            <Descriptions.Item label="Difficulty Pref">{selectedRequest.details.difficulty}</Descriptions.Item>
-                            <Descriptions.Item label="Experience">{selectedRequest.details.experienceLevel}</Descriptions.Item>
-                            <Descriptions.Item label="Fitness Level">{selectedRequest.details.fitnessLevel}</Descriptions.Item>
+                            <Descriptions.Item label="Difficulty Pref">{selectedRequest.difficulty || '—'}</Descriptions.Item>
+                            <Descriptions.Item label="Experience">{selectedRequest.experienceLevel || '—'}</Descriptions.Item>
+                            <Descriptions.Item label="Fitness Level">{selectedRequest.fitnessLevel || '—'}</Descriptions.Item>
                         </Descriptions>
 
                         {/* Logistics Section */}
                         <Descriptions title="Logistics & Preferences" bordered column={1} size="small">
                             <Descriptions.Item label="Accommodation">
                                 <HomeOutlined style={{ marginRight: 8 }} />
-                                {selectedRequest.details.accommodation}
+                                {selectedRequest.accommodation || '—'}
                             </Descriptions.Item>
                             <Descriptions.Item label="Meals">
-                                {selectedRequest.details.mealPreferences.join(', ')}
+                                {selectedRequest.mealPreferences?.length ? selectedRequest.mealPreferences.join(', ') : '—'}
                             </Descriptions.Item>
                             <Descriptions.Item label="Transport">
                                 <CarOutlined style={{ marginRight: 8 }} />
-                                {selectedRequest.details.transportation.join(', ')}
+                                {selectedRequest.transportation?.length ? selectedRequest.transportation.join(', ') : '—'}
                             </Descriptions.Item>
                             <Descriptions.Item label="Services">
                                 <Space>
-                                    {selectedRequest.details.guideRequired && <Tag color="blue">Guide Required</Tag>}
-                                    {selectedRequest.details.porterRequired && <Tag color="cyan">Porter Required</Tag>}
+                                    {selectedRequest.guideRequired && <Tag color="blue">Guide Required</Tag>}
+                                    {selectedRequest.porterRequired && <Tag color="cyan">Porter Required</Tag>}
                                 </Space>
                             </Descriptions.Item>
                         </Descriptions>
 
                         {/* Special Requests */}
-                        {selectedRequest.details.specialRequests && (
+                        {selectedRequest.specialRequests && (
                             <Card type="inner" title="Special Requests" size="small">
-                                <p style={{ margin: 0 }}>{selectedRequest.details.specialRequests}</p>
+                                <p style={{ margin: 0 }}>{selectedRequest.specialRequests}</p>
                             </Card>
                         )}
 
                         <div style={{ textAlign: 'right', color: '#999', fontSize: '12px' }}>
-                            Submitted on: {selectedRequest.submittedDate}
+                            Submitted on: {selectedRequest.createdAt ? dayjs(selectedRequest.createdAt).format('YYYY-MM-DD HH:mm') : '—'}
                         </div>
                     </div>
                 )}

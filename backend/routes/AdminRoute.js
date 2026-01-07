@@ -4,6 +4,7 @@ import { deleteUser, getAllBookings, getAllUsers, getDashboardStats, updateBooki
 import { createListing, deleteListing, getAllListings, getListingById, updateListing, updateListingGallery } from '../controllers/ListingController.js';
 import upload from '../middleware/multer.js';
 import { validateListingFilters } from '../middleware/validation.js';
+import { getAllCustomTripsAdmin, getCustomTripByIdAdmin, updateCustomTripStatusAdmin } from '../controllers/CustomTripController.js';
 
 const adminRouter = express.Router();
 
@@ -16,6 +17,11 @@ adminRouter.delete("/users/:id", isAdmin, deleteUser);
 
 adminRouter.get("/bookings", isAdmin, getAllBookings);
 adminRouter.patch("/bookings/:id/status", isAdmin, updateBookingStatusAdmin);
+
+// Custom trip requests
+adminRouter.get("/custom-trips", isAdmin, getAllCustomTripsAdmin);
+adminRouter.get("/custom-trips/:id", isAdmin, getCustomTripByIdAdmin);
+adminRouter.patch("/custom-trips/:id/status", isAdmin, updateCustomTripStatusAdmin);
 
 adminRouter.post("/listing", isAdmin, upload.array("images",10), createListing);
 adminRouter.get("/listing", isAdmin, validateListingFilters, getAllListings);

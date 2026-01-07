@@ -173,6 +173,34 @@ export const adminService = {
             throw error.response?.data?.message || 'Failed to delete listing';
         }
     },
+
+    // Custom Trip Requests
+    async getCustomTrips(params = {}) {
+        try {
+            const response = await adminApi.get('/custom-trips', { params });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data?.message || 'Failed to fetch custom trip requests';
+        }
+    },
+
+    async getCustomTripById(id) {
+        try {
+            const response = await adminApi.get(`/custom-trips/${id}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data?.message || 'Failed to fetch custom trip request';
+        }
+    },
+
+    async updateCustomTripStatus(id, { status, adminNotes }) {
+        try {
+            const response = await adminApi.patch(`/custom-trips/${id}/status`, { status, adminNotes });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data?.message || 'Failed to update custom trip request';
+        }
+    },
 };
 
 export default adminApi;

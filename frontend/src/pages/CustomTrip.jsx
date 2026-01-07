@@ -500,8 +500,8 @@ const CustomTrip = () => {
         const response = await axios.post('/api/custom-trips', submissionData, {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${checkAuth().token}`
-          }
+          },
+          withCredentials: true
         });
 
         console.log('Submission successful:', response.data);
