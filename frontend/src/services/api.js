@@ -18,6 +18,15 @@ const bookingApi = axios.create({
   },
 });
 
+// Public (non-auth) API for general endpoints
+const publicApi = axios.create({
+  baseURL: 'http://localhost:5000/api',
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
 
 export const authService = {
   async login(email, password) {
@@ -85,6 +94,17 @@ export const bookingService = {
       throw error.response?.data?.message || 'Failed to fetch bookings';
     }
   }
+};
+
+export const inquiryService = {
+  async submitInquiry(payload) {
+    try {
+      const response = await publicApi.post('/inquiry', payload);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to submit inquiry';
+    }
+  },
 };
 
 export default api;

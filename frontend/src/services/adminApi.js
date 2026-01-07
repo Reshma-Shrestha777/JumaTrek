@@ -312,6 +312,52 @@ export const adminService = {
             throw error.response?.data?.message || 'Failed to update custom trip request';
         }
     },
+
+    // Inquiries / Contact Messages
+    async getInquiries(params = {}) {
+        try {
+            const response = await adminApi.get('/inquiries', { params });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data?.message || 'Failed to fetch inquiries';
+        }
+    },
+
+    async getInquiryById(id) {
+        try {
+            const response = await adminApi.get(`/inquiries/${id}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data?.message || 'Failed to fetch inquiry';
+        }
+    },
+
+    async updateInquiryStatus(id, status) {
+        try {
+            const response = await adminApi.patch(`/inquiries/${id}/status`, { status });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data?.message || 'Failed to update inquiry status';
+        }
+    },
+
+    async replyToInquiry(id, replyMessage) {
+        try {
+            const response = await adminApi.post(`/inquiries/${id}/reply`, { replyMessage });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data?.message || 'Failed to send reply';
+        }
+    },
+
+    async deleteInquiry(id) {
+        try {
+            const response = await adminApi.delete(`/inquiries/${id}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data?.message || 'Failed to delete inquiry';
+        }
+    },
 };
 
 export default adminApi;

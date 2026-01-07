@@ -10,6 +10,7 @@ import userRouter from "./routes/UserRoute.js";
 import wishlistRouter from './routes/WishlistRoute.js';
 import adminRouter from './routes/AdminRoute.js';
 import customTripRouter from "./routes/CustomTripRoute.js";
+import inquiryRouter from "./routes/InquiryRoute.js";
 
 
 const PORT = process.env.PORT || 5000
@@ -29,6 +30,7 @@ app.use("/api/booking", bookingRouter)
 app.use("/api/wishlist", wishlistRouter)
 app.use("/api/admin", adminRouter)
 app.use("/api/custom-trips", customTripRouter)
+app.use("/api/inquiry", inquiryRouter)
 
 
 app.get("/", (req, res) => {

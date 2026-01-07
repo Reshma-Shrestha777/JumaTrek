@@ -4,6 +4,7 @@ import { deleteUser, getAllBookings, getAllUsers, getDashboardStats, updateBooki
 import { createListing, deleteListing, getAllListings, getListingById, updateListing, updateListingGallery } from '../controllers/ListingController.js';
 import { getAllGuides, createGuide, updateGuide, deleteGuide } from '../controllers/GuideController.js';
 import { getAllBlogs, getBlogById, createBlog, updateBlog, deleteBlog } from '../controllers/BlogController.js';
+import { getAllInquiries, getInquiryById, updateInquiryStatus, replyToInquiry, deleteInquiry } from '../controllers/InquiryController.js';
 import upload from '../middleware/multer.js';
 import { validateListingFilters } from '../middleware/validation.js';
 import { getAllCustomTripsAdmin, getCustomTripByIdAdmin, updateCustomTripStatusAdmin } from '../controllers/CustomTripController.js';
@@ -44,6 +45,13 @@ adminRouter.get("/blogs/:id", isAdmin, getBlogById);
 adminRouter.post("/blogs", isAdmin, upload.single("featuredImage"), createBlog);
 adminRouter.put("/blogs/:id", isAdmin, upload.single("featuredImage"), updateBlog);
 adminRouter.delete("/blogs/:id", isAdmin, deleteBlog);
+
+// Inquiries / Contact Messages
+adminRouter.get("/inquiries", isAdmin, getAllInquiries);
+adminRouter.get("/inquiries/:id", isAdmin, getInquiryById);
+adminRouter.patch("/inquiries/:id/status", isAdmin, updateInquiryStatus);
+adminRouter.post("/inquiries/:id/reply", isAdmin, replyToInquiry);
+adminRouter.delete("/inquiries/:id", isAdmin, deleteInquiry);
 
 
 export default adminRouter;

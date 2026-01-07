@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaWhatsapp, FaGlobe } from 'react-icons/fa';
+import { message } from 'antd';
+import { inquiryService, authService } from '../services/api';
 
 const ContactPage = () => {
     const [formData, setFormData] = useState({
@@ -9,15 +11,35 @@ const ContactPage = () => {
         message: ''
     });
 
+    // Prefill name/email from logged-in user (phone is picked up server-side)
+    useEffect(() => {
+        const user = authService.getCurrentUser?.();
+        if (user) {
+            setFormData((prev) => ({
+                ...prev,
+                name: user.name || prev.name,
+                email: user.email || prev.email,
+            }));
+        }
+    }, []);
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Form submitted:', formData);
-        alert('Thank you! We will get back to you shortly.');
-        setFormData({ name: '', email: '', subject: '', message: '' });
+        try {
+            if (!formData.name || !formData.email || !formData.subject || !formData.message) {
+                message.error('Please fill in all required fields.');
+                return;
+            }
+            await inquiryService.submitInquiry(formData);
+            message.success('Thank you! We will get back to you shortly.');
+            setFormData({ name: '', email: '', subject: '', message: '' });
+        } catch (err) {
+            message.error(err || 'Failed to send your message. Please try again.');
+        }
     };
 
     return (

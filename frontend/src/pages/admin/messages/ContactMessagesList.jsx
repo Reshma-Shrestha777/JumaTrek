@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Tag, Input, Select, Card, message, Modal, Form } from 'antd';
-import { MessageOutlined, EyeOutlined, DeleteOutlined, SearchOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
-import { messagesStorage } from '../../../utils/localStorage';
+import { MessageOutlined, EyeOutlined, DeleteOutlined, SearchOutlined, CheckOutlined, CloseOutlined, MailOutlined } from '@ant-design/icons';
+import { adminService } from '../../../services/adminApi';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -27,14 +27,18 @@ const ContactMessagesList = () => {
         applyFilters();
     }, [filters, messages]);
 
-    const fetchMessages = () => {
+    const fetchMessages = async () => {
         setLoading(true);
         try {
-            const data = messagesStorage.getAll();
+            const res = await adminService.getInquiries({
+                status: filters.status !== 'all' ? filters.status : undefined,
+                search: filters.search || undefined,
+            });
+            const data = res.data || [];
             setMessages(data);
             setFilteredMessages(data);
         } catch (error) {
-            message.error('Failed to fetch messages');
+            message.error(error || 'Failed to fetch messages');
         } finally {
             setLoading(false);
         }
@@ -66,40 +70,44 @@ const ContactMessagesList = () => {
 
         // Mark as read if it's new
         if (msg.status === 'new') {
-            messagesStorage.markAsRead(msg.id);
-            fetchMessages();
+            updateStatus(msg._id, 'read', false);
         }
     };
 
-    const handleDelete = (id, name) => {
+    const handleDelete = async (id, name) => {
         try {
-            messagesStorage.delete(id);
+            await adminService.deleteInquiry(id);
             message.success(`Message from "${name}" deleted successfully`);
             fetchMessages();
         } catch (error) {
-            message.error('Failed to delete message');
+            message.error(error || 'Failed to delete message');
         }
     };
 
-    const handleReply = (values) => {
+    const handleReply = async (values) => {
+        if (!selectedMessage?._id) return;
         try {
-            messagesStorage.markAsReplied(selectedMessage.id);
-            message.success('Reply sent successfully (UI only)');
+            await adminService.replyToInquiry(selectedMessage._id, values.replyMessage);
+            message.success('Reply saved (email sending disabled)');
             setDetailModalVisible(false);
             replyForm.resetFields();
             fetchMessages();
         } catch (error) {
-            message.error('Failed to send reply');
+            message.error(error || 'Failed to send reply');
         }
     };
 
     const handleArchive = (id) => {
+        updateStatus(id, 'archived');
+    };
+
+    const updateStatus = async (id, status, showMessage = true) => {
         try {
-            messagesStorage.archive(id);
-            message.success('Message archived successfully');
+            await adminService.updateInquiryStatus(id, status);
+            if (showMessage) message.success(`Status updated to ${status}`);
             fetchMessages();
         } catch (error) {
-            message.error('Failed to archive message');
+            message.error(error || 'Failed to update status');
         }
     };
 
@@ -120,7 +128,7 @@ const ContactMessagesList = () => {
             key: 'status',
             width: 100,
             render: (status) => (
-                <Tag color={getStatusColor(status)}>{status.toUpperCase()}</Tag>
+                <Tag color={getStatusColor(status)}>{status?.toUpperCase()}</Tag>
             ),
         },
         {
@@ -145,7 +153,7 @@ const ContactMessagesList = () => {
             dataIndex: 'createdAt',
             key: 'createdAt',
             sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
-            render: (date) => new Date(date).toLocaleDateString(),
+            render: (date) => date ? new Date(date).toLocaleString() : '—',
         },
         {
             title: 'Actions',
@@ -163,7 +171,7 @@ const ContactMessagesList = () => {
                         <Button
                             type="link"
                             icon={<CheckOutlined />}
-                            onClick={() => handleArchive(record.id)}
+                            onClick={() => handleArchive(record._id)}
                         >
                             Archive
                         </Button>
@@ -172,7 +180,7 @@ const ContactMessagesList = () => {
                         type="link"
                         danger
                         icon={<DeleteOutlined />}
-                        onClick={() => handleDelete(record.id, record.name)}
+                        onClick={() => handleDelete(record._id, record.name)}
                     >
                         Delete
                     </Button>
@@ -227,7 +235,7 @@ const ContactMessagesList = () => {
                 <Table
                     columns={columns}
                     dataSource={filteredMessages}
-                    rowKey="id"
+                    rowKey="_id"
                     loading={loading}
                     pagination={{
                         pageSize: 10,
@@ -267,28 +275,32 @@ const ContactMessagesList = () => {
                             </div>
                         )}
 
-                        {selectedMessage.status !== 'replied' && (
-                            <div>
-                                <h4>Reply to Message (UI Only)</h4>
-                                <Form
-                                    form={replyForm}
-                                    layout="vertical"
-                                    onFinish={handleReply}
+                        <div>
+                            <h4>Reply to Message</h4>
+                            <Form
+                                form={replyForm}
+                                layout="vertical"
+                                onFinish={handleReply}
+                            >
+                                <Form.Item
+                                    name="replyMessage"
+                                    label="Your Reply"
+                                    rules={[{ required: true, message: 'Please enter your reply' }]}
                                 >
-                                    <Form.Item
-                                        name="reply"
-                                        rules={[{ required: true, message: 'Please enter your reply' }]}
-                                    >
-                                        <TextArea rows={4} placeholder="Type your reply here..." />
-                                    </Form.Item>
-                                    <Form.Item>
-                                        <Button type="primary" htmlType="submit">
+                                    <TextArea rows={4} placeholder="Type your reply here" />
+                                </Form.Item>
+                                <Form.Item>
+                                    <Space>
+                                        <Button type="primary" htmlType="submit" icon={<MailOutlined />}>
                                             Send Reply
                                         </Button>
-                                    </Form.Item>
-                                </Form>
-                            </div>
-                        )}
+                                        <Button icon={<CloseOutlined />} onClick={() => setDetailModalVisible(false)}>
+                                            Close
+                                        </Button>
+                                    </Space>
+                                </Form.Item>
+                            </Form>
+                        </div>
                     </div>
                 )}
             </Modal>
