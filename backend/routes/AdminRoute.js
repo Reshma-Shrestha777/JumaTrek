@@ -17,11 +17,12 @@ adminRouter.delete("/users/:id", isAdmin, deleteUser);
 adminRouter.get("/bookings", isAdmin, getAllBookings);
 adminRouter.patch("/bookings/:id/status", isAdmin, updateBookingStatusAdmin);
 
-adminRouter.post("/listing", isAdmin, upload.array("images"), createListing);
-adminRouter.get("/listing", isAdmin, getAllListings);
+adminRouter.post("/listing", isAdmin, upload.array("images",10), createListing);
+adminRouter.get("/listing", isAdmin, validateListingFilters, getAllListings);
+// adminRouter.get("/listing", isAdmin, getAllListings);
 adminRouter.get("/listing/:id", isAdmin, getListingById);
 adminRouter.put("/listing/:id", isAdmin, upload.array("images",10),  updateListing);
 adminRouter.delete("/listing/:id", isAdmin, deleteListing);
-adminRouter.get("/listing", validateListingFilters, getAllListings)
+
 
 export default adminRouter;

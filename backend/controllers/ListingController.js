@@ -3,12 +3,73 @@ import Listing from "../model/ListingModel.js";
 
 export const createListing = async (req, res) => {
     try {
-         const listingData = req.body;
+        const listingData = { ...req.body };
 
-        
-        if (req.files && req.files.length > 0) {
-            listingData.gallery = req.files.map(file => file.path);
+        // Parse itinerary if it's a string (from FormData)
+        if (listingData.itinerary && typeof listingData.itinerary === 'string') {
+            try {
+                listingData.itinerary = JSON.parse(listingData.itinerary);
+            } catch (parseError) {
+                console.error("Error parsing itinerary:", parseError);
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid itinerary format",
+                    error: "Itinerary must be a valid JSON array"
+                });
+            }
         }
+
+        // Handle array fields that might come as strings or need to be arrays
+        // bestSeason, highlights, includes, excludes
+        const arrayFields = ['bestSeason', 'highlights', 'includes', 'excludes'];
+        arrayFields.forEach(field => {
+            if (listingData[field]) {
+                // If it's already an array, keep it
+                if (Array.isArray(listingData[field])) {
+                    return;
+                }
+                // If it's a string, try to parse it
+                if (typeof listingData[field] === 'string') {
+                    try {
+                        listingData[field] = JSON.parse(listingData[field]);
+                    } catch (e) {
+                        // If parsing fails, treat as single value and convert to array
+                        listingData[field] = [listingData[field]];
+                    }
+                }
+            }
+        });
+
+        // Handle numeric fields
+        if (listingData.price) listingData.price = Number(listingData.price);
+        if (listingData.duration) listingData.duration = Number(listingData.duration);
+        if (listingData.groupSize) listingData.groupSize = String(listingData.groupSize);
+        if (listingData.maxAltitude) listingData.maxAltitude = String(listingData.maxAltitude);
+
+        // Handle images - first image is featured, rest go to gallery
+        if (req.files && req.files.length > 0) {
+            const imagePaths = req.files.map(file => file.path);
+            // First image can be considered featured, all go to gallery
+            listingData.gallery = imagePaths;
+        }
+
+        // Ensure itinerary is an array
+        if (!Array.isArray(listingData.itinerary)) {
+            listingData.itinerary = [];
+        }
+
+        // Clean up itinerary items - ensure proper types
+        if (listingData.itinerary && listingData.itinerary.length > 0) {
+            listingData.itinerary = listingData.itinerary.map(item => ({
+                day: Number(item.day) || 1,
+                title: String(item.title || ''),
+                description: String(item.description || ''),
+                maxAltitude: item.maxAltitude ? String(item.maxAltitude) : '',
+                accommodation: item.accommodation ? String(item.accommodation) : '',
+                meals: item.meals ? String(item.meals) : ''
+            }));
+        }
+
         const newListing = new Listing(listingData);
         const savedListing = await newListing.save();
         res.status(201).json({
@@ -80,7 +141,6 @@ export const updateListing = async (req, res) => {
         });
     }
 };
-
 
 export const getAllListings = async (req, res) => {
     try {
@@ -181,7 +241,7 @@ export const getAllListings = async (req, res) => {
         });
     }
 };
-
+        
 
 export const getListingById = async (req, res) => {
     try {

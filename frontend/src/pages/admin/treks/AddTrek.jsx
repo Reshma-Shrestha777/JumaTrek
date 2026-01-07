@@ -28,6 +28,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import RichTextEditor from '../../../components/common/RichTextEditor';
+import { adminService } from '../../../services/adminApi';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -42,37 +43,130 @@ const AddTrek = () => {
   const [activeTab, setActiveTab] = useState('basic');
   const [featuredImage, setFeaturedImage] = useState(null);
   const [galleryImages, setGalleryImages] = useState([]);
+  const [detailedDescription, setDetailedDescription] = useState('');
 
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      // Handle form submission here
-      console.log('Form values:', values);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const formData = new FormData();
+
+      formData.append('title', values.title);
+      const description = detailedDescription || values.detailedDescription || values.shortDescription || '';
+      formData.append('description', description);
+      formData.append('region', values.region);
+      formData.append('price', values.price);
+      formData.append('duration', values.duration);
+      formData.append('difficulty', values.difficulty);
+      formData.append('maxAltitude', values.maxAltitude?.toString() || '');
+      formData.append('groupSize', values.groupSize?.toString() || '');
+
+       if (values.bestSeason && Array.isArray(values.bestSeason)) {
+        values.bestSeason.forEach(season => {
+          formData.append('bestSeason', season);
+        });
+      }
       
-      message.success('Trek added successfully!');
-      navigate('/admin/treks');
+      // Handle highlights array
+      if (values.highlights && Array.isArray(values.highlights)) {
+        values.highlights.forEach(highlight => {
+          formData.append('highlights', highlight);
+        });
+      }
+      
+      // Handle itinerary - convert to JSON string (will be parsed in backend)
+      if (values.itinerary && Array.isArray(values.itinerary)) {
+        // Clean up itinerary data - ensure all fields are properly formatted
+        const cleanedItinerary = values.itinerary.map(item => ({
+          day: Number(item.day) || 1,
+          title: item.title || '',
+          description: item.description || '',
+          maxAltitude: item.maxAltitude?.toString() || '',
+          accommodation: item.accommodation?.toString() || '',
+          meals: item.meals?.toString() || ''
+        }));
+        formData.append('itinerary', JSON.stringify(cleanedItinerary));
+      }
+      
+      // Handle includes/excludes arrays
+      if (values.priceIncludes && Array.isArray(values.priceIncludes)) {
+        values.priceIncludes.forEach(item => {
+          formData.append('includes', item);
+        });
+      }
+      
+      if (values.priceExcludes && Array.isArray(values.priceExcludes)) {
+        values.priceExcludes.forEach(item => {
+          formData.append('excludes', item);
+        });
+      }
+      
+      // Handle featured image - add as first image in images array
+      if (featuredImage) {
+        formData.append('images', featuredImage);
+      }
+      
+      // Handle gallery images
+      if (galleryImages && galleryImages.length > 0) {
+        galleryImages.forEach((file) => {
+          if (file.originFileObj) {
+            formData.append('images', file.originFileObj);
+          } else if (file instanceof File) {
+            formData.append('images', file);
+          }
+        });
+      }
+      
+      // Call the API
+      const response = await adminService.createListing(formData);
+      
+      if (response.success) {
+        message.success('Trek added successfully!');
+        navigate('/admin/treks');
+      } else {
+        throw new Error(response.message || 'Failed to create trek');
+      }
     } catch (error) {
       console.error('Error adding trek:', error);
-      message.error('Failed to add trek. Please try again.');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to add trek. Please try again.';
+      message.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleFeaturedImageChange = (info) => {
-    if (info.file.status === 'done') {
-      setFeaturedImage(info.file.originFileObj);
-      message.success(`${info.file.name} file uploaded successfully`);
+    const handleFeaturedImageChange = (info) => {
+    if (info.file.status === 'uploading') {
+      return;
+    }
+    if (info.file.status === 'done' || info.file.originFileObj) {
+      const file = info.file.originFileObj || info.file;
+      setFeaturedImage(file);
+      message.success(`${file.name} file selected`);
     } else if (info.file.status === 'error') {
       message.error(`${info.file.name} file upload failed.`);
     }
   };
 
   const handleGalleryChange = ({ fileList }) => {
-    setGalleryImages(fileList);
+    // Ensure all files have originFileObj
+    const processedFileList = fileList.map(file => {
+      if (file.originFileObj) {
+        return file;
+      }
+      // If it's a new file, create proper structure
+      if (file instanceof File) {
+        return {
+          uid: file.uid || `-${Date.now()}`,
+          name: file.name,
+          status: 'done',
+          url: URL.createObjectURL(file),
+          originFileObj: file
+        };
+      }
+      return file;
+    });
+    setGalleryImages(processedFileList);
   };
 
   const beforeUpload = (file) => {
