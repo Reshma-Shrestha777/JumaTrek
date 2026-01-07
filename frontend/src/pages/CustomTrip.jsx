@@ -250,7 +250,32 @@ const CustomTrip = () => {
       if (pendingTrip) {
         try {
           const tripData = JSON.parse(pendingTrip);
-          if (tripData.isDraft) {
+          const { isAuthenticated } = checkAuth();
+
+          if (isAuthenticated && tripData.isSubmissionPending) {
+            // User just logged in to complete submission
+            Modal.confirm({
+              title: 'Complete Your Submission',
+              content: 'Welcome back! Would you like to submit your pending custom trip request now?',
+              okText: 'Submit Request',
+              cancelText: 'Review First',
+              onOk() {
+                // Auto-submit immediately
+                setFormData(tripData);
+                // We pass the data directly to submit
+                handleSubmit(tripData);
+              },
+              onCancel() {
+                setFormData(tripData);
+                if (form) {
+                  form.setFieldsValue(tripData);
+                }
+                // Remove the pending flag but keep draft
+                const updatedDraft = { ...tripData, isSubmissionPending: false };
+                localStorage.setItem('pendingCustomTrip', JSON.stringify(updatedDraft));
+              }
+            });
+          } else if (tripData.isDraft) {
             // Ask user if they want to continue with draft
             Modal.confirm({
               title: 'Continue with draft?',
@@ -368,39 +393,51 @@ const CustomTrip = () => {
     fetchDestinations();
   }, []);
 
-  const nextStep = () => {
-    // Get current form values
-    const formValues = form ? form.getFieldsValue() : {};
+  const nextStep = async () => {
+    try {
+      // Define fields to validate for each step
+      const stepFields = {
+        0: ['destination', 'customDestination'],
+        1: ['groupSize', 'groupType', 'ageRange', 'experienceLevel', 'fitnessLevel'],
+        2: ['accommodation', 'mealPreferences'],
+        3: ['transportation'], // checkboxes typically default to false if unchecked
+        4: ['budgetRange', 'startDate', 'duration', 'customDuration']
+      };
 
-    // Basic validation before proceeding to next step
-    if (currentStep === 0) {
-      if (!formValues.destination && !formData.destination) {
-        message.error('Please select a destination');
-        return;
-      }
-    } else if (currentStep === 1) {
-      if (!formValues.groupType && !formData.groupType) {
-        message.error('Please select a group type');
-        return;
-      }
-    }
+      // Get fields for current step
+      const currentFields = stepFields[currentStep] || [];
 
-    // Update form data with current values before proceeding
-    if (form) {
-      const currentValues = form.getFieldsValue(true);
-      setFormData(prev => ({
-        ...prev,
-        ...currentValues,
-        contactInfo: {
-          ...prev.contactInfo,
-          ...(currentValues.contactInfo || {})
+      // Update form data with current values before validation to ensure everything is synced
+      if (form) {
+        const currentValues = form.getFieldsValue(true);
+        setFormData(prev => ({
+          ...prev,
+          ...currentValues,
+          contactInfo: {
+            ...prev.contactInfo,
+            ...(currentValues.contactInfo || {})
+          }
+        }));
+      }
+
+      // Validate only the fields for the current step
+      await form.validateFields(currentFields);
+
+      // Additional custom validation/checks if needed
+      if (currentStep === 0) {
+        const values = form.getFieldsValue();
+        if (values.destination === 'custom' && !values.customDestination) {
+          // Redundant if caught by rules, but safe.
         }
-      }));
-    }
+      }
 
-    // Proceed to next step
-    setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Proceed to next step
+      setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+      console.log('Validation failed:', error);
+      message.error('Please fill in all required fields before proceeding');
+    }
   };
 
   const prevStep = () => {
@@ -448,6 +485,7 @@ const CustomTrip = () => {
           },
           termsAgreed: formValues.termsAgreed || false,
           isDraft: true,
+          isSubmissionPending: true, // Flag to indicate we should try to submit after login
           timestamp: new Date().toISOString()
         };
 
@@ -674,16 +712,16 @@ const CustomTrip = () => {
       </motion.div>
 
       <div className="custom-trip-steps">
-        <Steps current={currentStep} responsive={true}>
-          {steps.map((item, index) => (
-            <Step
-              key={item.title}
-              title={item.title}
-              icon={item.icon}
-              disabled={loading}
-            />
-          ))}
-        </Steps>
+        <Steps
+          current={currentStep}
+          responsive={true}
+          items={steps.map(item => ({
+            key: item.title,
+            title: item.title,
+            icon: item.icon,
+            disabled: loading
+          }))}
+        />
       </div>
 
       <div className="custom-trip-form">
