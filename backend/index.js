@@ -23,6 +23,8 @@ app.use(cors({
     credentials: true
 }))
 
+app.use('/uploads', express.static('uploads'))
+
 
 app.use("/api/auth", authRouter)
 app.use("/api/user", userRouter)

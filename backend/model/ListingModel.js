@@ -30,14 +30,14 @@ const listingSchema = new mongoose.Schema({
         required: true
     },
     maxAltitude: {
-        type: String 
+        type: String
     },
     bestSeason: {
-        type: [String], 
+        type: [String],
         default: []
     },
     groupSize: {
-        type: String 
+        type: String
     },
     highlights: {
         type: [String],
@@ -60,8 +60,51 @@ const listingSchema = new mongoose.Schema({
         default: []
     },
     gallery: {
-        type: [String], 
+        type: [String],
         default: []
+    },
+    discountPrice: {
+        type: Number
+    },
+    singleSupplement: {
+        type: Number
+    },
+    deposit: {
+        type: Number
+    },
+    featured: {
+        type: Boolean,
+        default: false
+    },
+    status: {
+        type: String,
+        enum: ['draft', 'published', 'archived'],
+        default: 'draft'
+    },
+    groupDiscount: {
+        type: Boolean,
+        default: false
+    },
+    privateTrip: {
+        type: Boolean,
+        default: false
+    },
+    startPoint: {
+        type: String
+    },
+    endPoint: {
+        type: String
+    },
+    slug: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
+    seoTitle: {
+        type: String
+    },
+    metaDescription: {
+        type: String
     }
 }, { timestamps: true });
 

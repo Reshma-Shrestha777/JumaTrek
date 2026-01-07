@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import { 
-  Form, 
-  Input, 
-  Button, 
-  Card, 
-  Row, 
-  Col, 
-  Select, 
-  InputNumber, 
-  Upload, 
-  message, 
-  Switch, 
+import {
+  Form,
+  Input,
+  Button,
+  Card,
+  Row,
+  Col,
+  Select,
+  InputNumber,
+  Upload,
+  message,
+  Switch,
   Divider,
   Tabs,
   Typography,
@@ -18,10 +18,10 @@ import {
   Alert,
   Collapse
 } from 'antd';
-import { 
-  SaveOutlined, 
-  UploadOutlined, 
-  PlusOutlined, 
+import {
+  SaveOutlined,
+  UploadOutlined,
+  PlusOutlined,
   MinusCircleOutlined,
   InfoCircleOutlined,
   ArrowLeftOutlined
@@ -48,11 +48,11 @@ const AddTrek = () => {
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      
+
       const formData = new FormData();
 
       formData.append('title', values.title);
-      const description = detailedDescription || values.detailedDescription || values.shortDescription || '';
+      const description = detailedDescription || values.detailedDescription || '';
       formData.append('description', description);
       formData.append('region', values.region);
       formData.append('price', values.price);
@@ -61,19 +61,33 @@ const AddTrek = () => {
       formData.append('maxAltitude', values.maxAltitude?.toString() || '');
       formData.append('groupSize', values.groupSize?.toString() || '');
 
-       if (values.bestSeason && Array.isArray(values.bestSeason)) {
+      if (values.discountPrice) formData.append('discountPrice', values.discountPrice);
+      if (values.singleSupplement) formData.append('singleSupplement', values.singleSupplement);
+      if (values.deposit) formData.append('deposit', values.deposit);
+
+      formData.append('featured', values.featured || false);
+      formData.append('status', values.status || 'draft');
+      formData.append('groupDiscount', values.groupDiscount || false);
+      formData.append('privateTrip', values.privateTrip || false);
+      formData.append('startPoint', values.startPoint || '');
+      formData.append('endPoint', values.endPoint || '');
+      if (values.slug) formData.append('slug', values.slug);
+      if (values.seoTitle) formData.append('seoTitle', values.seoTitle);
+      if (values.metaDescription) formData.append('metaDescription', values.metaDescription);
+
+      if (values.bestSeason && Array.isArray(values.bestSeason)) {
         values.bestSeason.forEach(season => {
           formData.append('bestSeason', season);
         });
       }
-      
+
       // Handle highlights array
       if (values.highlights && Array.isArray(values.highlights)) {
         values.highlights.forEach(highlight => {
           formData.append('highlights', highlight);
         });
       }
-      
+
       // Handle itinerary - convert to JSON string (will be parsed in backend)
       if (values.itinerary && Array.isArray(values.itinerary)) {
         // Clean up itinerary data - ensure all fields are properly formatted
@@ -87,25 +101,25 @@ const AddTrek = () => {
         }));
         formData.append('itinerary', JSON.stringify(cleanedItinerary));
       }
-      
+
       // Handle includes/excludes arrays
       if (values.priceIncludes && Array.isArray(values.priceIncludes)) {
         values.priceIncludes.forEach(item => {
           formData.append('includes', item);
         });
       }
-      
+
       if (values.priceExcludes && Array.isArray(values.priceExcludes)) {
         values.priceExcludes.forEach(item => {
           formData.append('excludes', item);
         });
       }
-      
+
       // Handle featured image - add as first image in images array
       if (featuredImage) {
         formData.append('images', featuredImage);
       }
-      
+
       // Handle gallery images
       if (galleryImages && galleryImages.length > 0) {
         galleryImages.forEach((file) => {
@@ -116,10 +130,10 @@ const AddTrek = () => {
           }
         });
       }
-      
+
       // Call the API
       const response = await adminService.createListing(formData);
-      
+
       if (response.success) {
         message.success('Trek added successfully!');
         navigate('/admin/treks');
@@ -135,7 +149,7 @@ const AddTrek = () => {
     }
   };
 
-    const handleFeaturedImageChange = (info) => {
+  const handleFeaturedImageChange = (info) => {
     if (info.file.status === 'uploading') {
       return;
     }
@@ -241,19 +255,6 @@ const AddTrek = () => {
             <Input placeholder="E.g., Everest Base Camp Trek" size="large" />
           </Form.Item>
 
-          <Form.Item
-            label="Short Description"
-            name="shortDescription"
-            rules={[{ required: true, message: 'Please enter a short description' }]}
-          >
-            <TextArea
-              rows={3}
-              placeholder="A short description that appears in trek listings"
-              maxLength={300}
-              showCount
-            />
-          </Form.Item>
-
           <Row gutter={16}>
             <Col xs={24} md={8}>
               <Form.Item
@@ -291,11 +292,11 @@ const AddTrek = () => {
                 name="duration"
                 rules={[{ required: true, message: 'Please enter duration' }]}
               >
-                <InputNumber 
-                  min={1} 
-                  max={100} 
-                  className="w-full" 
-                  size="large" 
+                <InputNumber
+                  min={1}
+                  max={100}
+                  className="w-full"
+                  size="large"
                   placeholder="e.g., 14"
                 />
               </Form.Item>
@@ -309,11 +310,11 @@ const AddTrek = () => {
                 name="maxAltitude"
                 rules={[{ required: true, message: 'Please enter max altitude' }]}
               >
-                <InputNumber 
-                  min={1000} 
-                  max={9000} 
-                  className="w-full" 
-                  size="large" 
+                <InputNumber
+                  min={1000}
+                  max={9000}
+                  className="w-full"
+                  size="large"
                   placeholder="e.g., 5545"
                 />
               </Form.Item>
@@ -324,11 +325,11 @@ const AddTrek = () => {
                 name="groupSize"
                 rules={[{ required: true, message: 'Please enter group size' }]}
               >
-                <InputNumber 
-                  min={1} 
-                  max={100} 
-                  className="w-full" 
-                  size="large" 
+                <InputNumber
+                  min={1}
+                  max={100}
+                  className="w-full"
+                  size="large"
                   placeholder="e.g., 12"
                 />
               </Form.Item>
@@ -339,9 +340,9 @@ const AddTrek = () => {
                 name="bestSeason"
                 rules={[{ required: true, message: 'Please select best season' }]}
               >
-                <Select 
-                  mode="multiple" 
-                  placeholder="Select seasons" 
+                <Select
+                  mode="multiple"
+                  placeholder="Select seasons"
                   size="large"
                   optionLabelProp="label"
                 >
@@ -456,10 +457,10 @@ const AddTrek = () => {
             name="price"
             rules={[{ required: true, message: 'Please enter price' }]}
           >
-            <InputNumber 
-              min={0} 
-              className="w-full" 
-              size="large" 
+            <InputNumber
+              min={0}
+              className="w-full"
+              size="large"
               formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
               parser={value => value.replace(/\$\s?|(,*)/g, '')}
             />
@@ -469,10 +470,10 @@ const AddTrek = () => {
             label="Discount Price ($)"
             name="discountPrice"
           >
-            <InputNumber 
-              min={0} 
-              className="w-full" 
-              size="large" 
+            <InputNumber
+              min={0}
+              className="w-full"
+              size="large"
               formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
               parser={value => value.replace(/\$\s?|(,*)/g, '')}
               placeholder="Leave empty for no discount"
@@ -483,10 +484,10 @@ const AddTrek = () => {
             label="Single Supplement ($)"
             name="singleSupplement"
           >
-            <InputNumber 
-              min={0} 
-              className="w-full" 
-              size="large" 
+            <InputNumber
+              min={0}
+              className="w-full"
+              size="large"
               formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
               parser={value => value.replace(/\$\s?|(,*)/g, '')}
               placeholder="Additional cost for single room"
@@ -498,10 +499,10 @@ const AddTrek = () => {
             name="deposit"
             rules={[{ required: true, message: 'Please enter deposit amount' }]}
           >
-            <InputNumber 
-              min={0} 
-              className="w-full" 
-              size="large" 
+            <InputNumber
+              min={0}
+              className="w-full"
+              size="large"
               formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
               parser={value => value.replace(/\$\s?|(,*)/g, '')}
             />
@@ -696,7 +697,7 @@ const AddTrek = () => {
         showIcon
         className="mb-6"
       />
-      
+
       <Form.List name="detailedItinerary">
         {(fields, { add, remove }) => (
           <>
@@ -743,7 +744,7 @@ const AddTrek = () => {
                     </Button>
                   </Col>
                 </Row>
-                
+
                 <Row gutter={16} className="mb-4">
                   <Col xs={24} md={8}>
                     <Form.Item
@@ -773,7 +774,7 @@ const AddTrek = () => {
                     </Form.Item>
                   </Col>
                 </Row>
-                
+
                 <Form.Item
                   {...restField}
                   name={[name, 'description']}
@@ -782,7 +783,7 @@ const AddTrek = () => {
                 >
                   <TextArea rows={4} placeholder="Detailed description of the day's activities" />
                 </Form.Item>
-                
+
                 <Form.Item
                   {...restField}
                   name={[name, 'highlights']}
@@ -795,7 +796,7 @@ const AddTrek = () => {
                     tokenSeparators={[',']}
                   />
                 </Form.Item>
-                
+
                 <Form.Item
                   {...restField}
                   name={[name, 'meals']}
@@ -812,11 +813,11 @@ const AddTrek = () => {
                     <Option value="snacks" label="Snacks">Snacks</Option>
                   </Select>
                 </Form.Item>
-                
+
                 <Divider />
               </div>
             ))}
-            
+
             <Form.Item>
               <Button
                 type="dashed"
@@ -836,9 +837,9 @@ const AddTrek = () => {
   return (
     <div className="add-trek-page">
       <div className="mb-6">
-        <Button 
-          type="text" 
-          icon={<ArrowLeftOutlined />} 
+        <Button
+          type="text"
+          icon={<ArrowLeftOutlined />}
           onClick={() => navigate('/admin/treks')}
           className="mb-4"
         >
@@ -875,8 +876,8 @@ const AddTrek = () => {
           ],
         }}
       >
-        <Tabs 
-          activeKey={activeTab} 
+        <Tabs
+          activeKey={activeTab}
           onChange={setActiveTab}
           type="card"
           items={[

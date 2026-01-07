@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api/admin';
+export const IMAGE_BASE_URL = 'http://localhost:5000/';
 
 const adminApi = axios.create({
     baseURL: API_URL,

@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  Form, 
-  Input, 
-  Button, 
-  Card, 
-  Row, 
-  Col, 
-  Select, 
-  InputNumber, 
-  Upload, 
-  message, 
-  Switch, 
+import {
+  Form,
+  Input,
+  Button,
+  Card,
+  Row,
+  Col,
+  Select,
+  InputNumber,
+  Upload,
+  message,
+  Switch,
   Divider,
   Tabs,
   Typography,
@@ -19,11 +19,16 @@ import {
   Alert,
   Skeleton
 } from 'antd';
-import { 
-  SaveOutlined, 
+import {
+  SaveOutlined,
   ArrowLeftOutlined,
-  DeleteOutlined
+  DeleteOutlined,
+  UploadOutlined,
+  PlusOutlined
 } from '@ant-design/icons';
+import { adminService, IMAGE_BASE_URL } from '../../../services/adminApi';
+
+const { TextArea } = Input;
 import RichTextEditor from '../../../components/common/RichTextEditor';
 
 const { Title, Text } = Typography;
@@ -38,61 +43,49 @@ const EditTrek = () => {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
   const [trekData, setTrekData] = useState(null);
+  const [featuredImage, setFeaturedImage] = useState(null);
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [imagesToRemove, setImagesToRemove] = useState([]);
+  const [detailedDescription, setDetailedDescription] = useState('');
 
   // Fetch trek data
   useEffect(() => {
     const fetchTrek = async () => {
+      setLoading(true);
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        // Mock data - replace with actual API call
-        const mockTrek = {
-          id,
-          title: 'Everest Base Camp Trek',
-          shortDescription: 'Experience the adventure of a lifetime with this classic trek to the base of the world\'s highest peak.',
-          region: 'Everest',
-          difficulty: 'Challenging',
-          duration: 14,
-          maxAltitude: 5545,
-          groupSize: 12,
-          bestSeason: ['spring', 'autumn'],
-          startPoint: 'Kathmandu',
-          endPoint: 'Lukla',
-          price: 1500,
-          discountPrice: 1400,
-          singleSupplement: 300,
-          deposit: 200,
-          priceIncludes: [
-            'Airport transfers',
-            'Accommodation in tea houses',
-            'All meals during the trek',
-            'Experienced trekking guide',
-            'TIMS card and trekking permits',
-          ],
-          priceExcludes: [
-            'International flights',
-            'Travel insurance',
-            'Nepal visa fee',
-            'Personal expenses',
-            'Tips for guides and porters',
-          ],
-          accommodation: ['tea_house'],
-          transportation: ['flight'],
-          groupDiscount: true,
-          privateTrip: true,
-          featured: true,
-          status: 'published',
-          seoTitle: 'Everest Base Camp Trek - 14 Days | JumaTrek',
-          metaDescription: 'Experience the adventure of a lifetime with our 14-day Everest Base Camp Trek. Breathtaking views, cultural experiences, and professional guides.',
-          slug: 'everest-base-camp-trek',
-        };
-        
-        setTrekData(mockTrek);
-        form.setFieldsValue(mockTrek);
+        const response = await adminService.getListingById(id);
+
+        if (response.success) {
+          const data = response.data;
+
+          // Map backend fields to form fields
+          const mappedData = {
+            ...data,
+            priceIncludes: data.includes || [],
+            priceExcludes: data.excludes || [],
+            detailedDescription: data.description || '',
+            gallery: data.gallery ? data.gallery.map((img, idx) => ({
+              uid: `original-${idx}`,
+              name: img.split('/').pop(),
+              status: 'done',
+              url: img.startsWith('http') ? img : `${IMAGE_BASE_URL}${img}`,
+              thumbUrl: img.startsWith('http') ? img : `${IMAGE_BASE_URL}${img}`,
+              isOriginal: true,
+              originalPath: img
+            })) : []
+          };
+
+          setTrekData(mappedData);
+          setDetailedDescription(data.description || '');
+          setGalleryImages(mappedData.gallery);
+
+          form.setFieldsValue(mappedData);
+        } else {
+          message.error('Failed to load trek data');
+        }
       } catch (error) {
         console.error('Error fetching trek:', error);
-        message.error('Failed to load trek data');
+        message.error(typeof error === 'string' ? error : 'Failed to load trek data');
       } finally {
         setLoading(false);
       }
@@ -104,31 +97,94 @@ const EditTrek = () => {
   const onFinish = async (values) => {
     setSaving(true);
     try {
-      // Handle form submission here
-      console.log('Updated values:', values);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      message.success('Trek updated successfully!');
-      navigate('/admin/treks');
+      const formData = new FormData();
+
+      // Append basic fields
+      formData.append('title', values.title);
+      formData.append('description', detailedDescription || values.detailedDescription || '');
+      formData.append('region', values.region);
+      formData.append('difficulty', values.difficulty);
+      formData.append('duration', values.duration);
+      formData.append('price', values.price);
+      formData.append('status', values.status);
+
+      if (values.maxAltitude) formData.append('maxAltitude', values.maxAltitude.toString());
+      if (values.groupSize) formData.append('groupSize', values.groupSize.toString());
+      if (values.discountPrice) formData.append('discountPrice', values.discountPrice.toString());
+      if (values.singleSupplement) formData.append('singleSupplement', values.singleSupplement.toString());
+      if (values.deposit) formData.append('deposit', values.deposit.toString());
+
+      formData.append('featured', values.featured || false);
+      formData.append('groupDiscount', values.groupDiscount || false);
+      formData.append('privateTrip', values.privateTrip || false);
+      formData.append('startPoint', values.startPoint || '');
+      formData.append('endPoint', values.endPoint || '');
+      if (values.slug) formData.append('slug', values.slug);
+      if (values.seoTitle) formData.append('seoTitle', values.seoTitle);
+      if (values.metaDescription) formData.append('metaDescription', values.metaDescription);
+
+      // Handle arrays
+      if (values.bestSeason && Array.isArray(values.bestSeason)) {
+        values.bestSeason.forEach(s => formData.append('bestSeason', s));
+      }
+      if (values.priceIncludes && Array.isArray(values.priceIncludes)) {
+        values.priceIncludes.forEach(i => formData.append('includes', i));
+      }
+      if (values.priceExcludes && Array.isArray(values.priceExcludes)) {
+        values.priceExcludes.forEach(e => formData.append('excludes', e));
+      }
+
+      // Handle itinerary
+      if (values.itinerary && Array.isArray(values.itinerary)) {
+        formData.append('itinerary', JSON.stringify(values.itinerary));
+      }
+
+      // Handle images to remove
+      if (imagesToRemove.length > 0) {
+        formData.append('imagesToRemove', JSON.stringify(imagesToRemove));
+      }
+
+      // Handle new image uploads from galleryImages state
+      if (galleryImages && Array.isArray(galleryImages)) {
+        galleryImages.forEach(file => {
+          if (file.originFileObj) {
+            formData.append('images', file.originFileObj);
+          }
+        });
+      }
+
+      const response = await adminService.updateListing(id, formData);
+
+      if (response.success) {
+        message.success('Trek updated successfully!');
+        navigate('/admin/treks');
+      }
     } catch (error) {
       console.error('Error updating trek:', error);
-      message.error('Failed to update trek. Please try again.');
+      message.error(typeof error === 'string' ? error : 'Failed to update trek. Please try again.');
     } finally {
       setSaving(false);
     }
   };
 
+  const handleImageRemove = (file) => {
+    if (file.isOriginal) {
+      setImagesToRemove(prev => [...prev, file.originalPath]);
+    }
+  };
+
+  const handleDetailedDescriptionChange = (content) => {
+    setDetailedDescription(content);
+  };
+
   const handleDelete = async () => {
     try {
-      // Handle delete logic
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await adminService.deleteListing(id);
       message.success('Trek deleted successfully');
       navigate('/admin/treks');
     } catch (error) {
       console.error('Error deleting trek:', error);
-      message.error('Failed to delete trek');
+      message.error(typeof error === 'string' ? error : 'Failed to delete trek');
     }
   };
 
@@ -149,8 +205,8 @@ const EditTrek = () => {
           type="error"
           showIcon
         />
-        <Button 
-          type="primary" 
+        <Button
+          type="primary"
           className="mt-4"
           onClick={() => navigate('/admin/treks')}
         >
@@ -163,9 +219,9 @@ const EditTrek = () => {
   return (
     <div className="edit-trek-page">
       <div className="mb-6">
-        <Button 
-          type="text" 
-          icon={<ArrowLeftOutlined />} 
+        <Button
+          type="text"
+          icon={<ArrowLeftOutlined />}
           onClick={() => navigate('/admin/treks')}
           className="mb-4"
         >
@@ -176,8 +232,8 @@ const EditTrek = () => {
             <Title level={3}>Edit Trek</Title>
             <Text type="secondary">Update the details of this trek package</Text>
           </div>
-          <Button 
-            danger 
+          <Button
+            danger
             icon={<DeleteOutlined />}
             onClick={() => {
               if (window.confirm('Are you sure you want to delete this trek? This action cannot be undone.')) {
@@ -196,8 +252,8 @@ const EditTrek = () => {
         onFinish={onFinish}
         initialValues={trekData}
       >
-        <Tabs 
-          activeKey={activeTab} 
+        <Tabs
+          activeKey={activeTab}
           onChange={setActiveTab}
           type="card"
         >
@@ -211,19 +267,6 @@ const EditTrek = () => {
                     rules={[{ required: true, message: 'Please enter trek title' }]}
                   >
                     <Input placeholder="E.g., Everest Base Camp Trek" size="large" />
-                  </Form.Item>
-
-                  <Form.Item
-                    label="Short Description"
-                    name="shortDescription"
-                    rules={[{ required: true, message: 'Please enter a short description' }]}
-                  >
-                    <TextArea
-                      rows={3}
-                      placeholder="A short description that appears in trek listings"
-                      maxLength={300}
-                      showCount
-                    />
                   </Form.Item>
 
                   <Row gutter={16}>
@@ -262,11 +305,11 @@ const EditTrek = () => {
                         name="duration"
                         rules={[{ required: true, message: 'Please enter duration' }]}
                       >
-                        <InputNumber 
-                          min={1} 
-                          max={100} 
-                          className="w-full" 
-                          size="large" 
+                        <InputNumber
+                          min={1}
+                          max={100}
+                          className="w-full"
+                          size="large"
                           placeholder="e.g., 14"
                         />
                       </Form.Item>
@@ -278,7 +321,7 @@ const EditTrek = () => {
                     name="detailedDescription"
                     rules={[{ required: true, message: 'Please enter detailed description' }]}
                   >
-                    <RichTextEditor />
+                    <RichTextEditor onChange={handleDetailedDescriptionChange} value={detailedDescription} />
                   </Form.Item>
                 </Card>
               </Col>
@@ -365,10 +408,10 @@ const EditTrek = () => {
                     name="price"
                     rules={[{ required: true, message: 'Please enter price' }]}
                   >
-                    <InputNumber 
-                      min={0} 
-                      className="w-full" 
-                      size="large" 
+                    <InputNumber
+                      min={0}
+                      className="w-full"
+                      size="large"
                       formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                       parser={value => value.replace(/\$\s?|(,*)/g, '')}
                     />
@@ -379,10 +422,10 @@ const EditTrek = () => {
                     label="Discount Price ($)"
                     name="discountPrice"
                   >
-                    <InputNumber 
-                      min={0} 
-                      className="w-full" 
-                      size="large" 
+                    <InputNumber
+                      min={0}
+                      className="w-full"
+                      size="large"
                       formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                       parser={value => value.replace(/\$\s?|(,*)/g, '')}
                       placeholder="Leave empty for no discount"
@@ -394,10 +437,10 @@ const EditTrek = () => {
                     label="Single Supplement ($)"
                     name="singleSupplement"
                   >
-                    <InputNumber 
-                      min={0} 
-                      className="w-full" 
-                      size="large" 
+                    <InputNumber
+                      min={0}
+                      className="w-full"
+                      size="large"
                       formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                       parser={value => value.replace(/\$\s?|(,*)/g, '')}
                       placeholder="Additional cost for single room"
@@ -411,10 +454,10 @@ const EditTrek = () => {
                 name="deposit"
                 rules={[{ required: true, message: 'Please enter deposit amount' }]}
               >
-                <InputNumber 
-                  min={0} 
-                  className="w-full" 
-                  size="large" 
+                <InputNumber
+                  min={0}
+                  className="w-full"
+                  size="large"
                   formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={value => value.replace(/\$\s?|(,*)/g, '')}
                 />
@@ -449,46 +492,28 @@ const EditTrek = () => {
           <TabPane tab="Media" key="media">
             <Card title="Trek Media" className="mb-6">
               <Form.Item
-                label="Featured Image"
-                name="featuredImage"
-                valuePropName="fileList"
-                getValueFromEvent={e => e && e.fileList}
-              >
-                <Upload
-                  name="featuredImage"
-                  listType="picture-card"
-                  className="featured-image-uploader"
-                  showUploadList={false}
-                  beforeUpload={() => false}
-                >
-                  <div>
-                    <UploadOutlined />
-                    <div style={{ marginTop: 8 }}>Upload</div>
-                  </div>
-                </Upload>
-                <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
-                  Recommended size: 1200x800px. Max file size: 5MB.
-                </Text>
-              </Form.Item>
-
-              <Form.Item
-                label="Gallery Images"
+                label="Images (First will be featured)"
                 name="gallery"
                 valuePropName="fileList"
-                getValueFromEvent={e => e && e.fileList}
+                getValueFromEvent={e => e && Array.isArray(e.fileList) ? e.fileList : []}
               >
                 <Upload
                   multiple
                   listType="picture-card"
                   beforeUpload={() => false}
+                  onRemove={handleImageRemove}
+                  onChange={({ fileList }) => setGalleryImages(fileList)}
+                  fileList={galleryImages}
                 >
-                  <div>
-                    <PlusOutlined />
-                    <div style={{ marginTop: 8 }}>Upload</div>
-                  </div>
+                  {galleryImages.length < 10 && (
+                    <div>
+                      <PlusOutlined />
+                      <div style={{ marginTop: 8 }}>Upload</div>
+                    </div>
+                  )}
                 </Upload>
                 <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
-                  Upload up to 10 images. First image will be used as cover.
+                  Upload up to 10 images. The first image in the list will be treated as the main featured image.
                 </Text>
               </Form.Item>
             </Card>
@@ -496,15 +521,15 @@ const EditTrek = () => {
         </Tabs>
 
         <div className="sticky bottom-0 bg-white border-t p-4 -mx-6 -mb-6 mt-6 flex justify-end gap-4">
-          <Button 
+          <Button
             onClick={() => navigate('/admin/treks')}
             disabled={saving}
           >
             Cancel
           </Button>
-          <Button 
-            type="primary" 
-            htmlType="submit" 
+          <Button
+            type="primary"
+            htmlType="submit"
             loading={saving}
             icon={<SaveOutlined />}
           >
@@ -512,7 +537,7 @@ const EditTrek = () => {
           </Button>
         </div>
       </Form>
-    </div>
+    </div >
   );
 };
 

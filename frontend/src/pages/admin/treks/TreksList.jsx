@@ -1,25 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Table, 
-  Button, 
-  Space, 
-  Tag, 
-  Input, 
-  Select, 
-  Card, 
-  Row, 
-  Col, 
-  Popconfirm, 
-  message, 
+import {
+  Table,
+  Button,
+  Space,
+  Tag,
+  Input,
+  Select,
+  Card,
+  Row,
+  Col,
+  Popconfirm,
+  message,
   Badge,
   Tooltip,
   Switch
 } from 'antd';
-import { 
-  PlusOutlined, 
-  SearchOutlined, 
-  EditOutlined, 
-  DeleteOutlined, 
+import {
+  PlusOutlined,
+  SearchOutlined,
+  EditOutlined,
+  DeleteOutlined,
   EyeOutlined,
   FilterOutlined,
   ReloadOutlined
@@ -62,14 +62,14 @@ const TreksList = () => {
       };
 
       const response = await adminService.getAllListings(params);
-      
+
       if (response.success) {
         // Apply client-side search filter if search is provided
         let filteredData = response.data;
-        
+
         if (filters.search) {
           const searchLower = filters.search.toLowerCase();
-          filteredData = response.data.filter(listing => 
+          filteredData = response.data.filter(listing =>
             listing.title.toLowerCase().includes(searchLower) ||
             listing.region.toLowerCase().includes(searchLower) ||
             listing.description.toLowerCase().includes(searchLower)
@@ -135,7 +135,7 @@ const TreksList = () => {
       dataIndex: 'title',
       key: 'title',
       render: (text, record) => (
-        <Link to={`/admin/treks/${record._id}`} className="font-medium">
+        <Link to={`/admin/treks/view/${record._id}`} className="font-medium">
           {text}
         </Link>
       ),
@@ -156,7 +156,7 @@ const TreksList = () => {
         if (difficulty === 'Easy') color = 'green';
         if (difficulty === 'Moderate') color = 'orange';
         if (difficulty === 'Challenging') color = 'red';
-        
+
         return <Tag color={color}>{difficulty}</Tag>;
       },
       sorter: (a, b) => a.difficulty.localeCompare(b.difficulty),
@@ -194,7 +194,7 @@ const TreksList = () => {
       render: (_, record) => (
         <Space size="middle">
           <Tooltip title="View Details">
-            <Link to={`/admin/treks/${record._id}`}>
+            <Link to={`/admin/treks/view/${record._id}`}>
               <Button type="text" icon={<EyeOutlined />} />
             </Link>
           </Tooltip>
@@ -253,7 +253,7 @@ const TreksList = () => {
               <Option value="Moderate">Moderate</Option>
               <Option value="Challenging">Challenging</Option>
             </Select>
-            
+
             <Select
               placeholder="Filter by region"
               className="w-full md:w-40"
@@ -268,10 +268,10 @@ const TreksList = () => {
               <Option value="Manaslu">Manaslu</Option>
               <Option value="Mustang">Mustang</Option>
             </Select>
-            
-            <Button 
-              type="default" 
-              icon={<ReloadOutlined />} 
+
+            <Button
+              type="default"
+              icon={<ReloadOutlined />}
               onClick={() => {
                 setFilters({
                   search: '',
@@ -282,9 +282,9 @@ const TreksList = () => {
             >
               Reset
             </Button>
-            
-            <Button 
-              type="primary" 
+
+            <Button
+              type="primary"
               icon={<PlusOutlined />}
               onClick={() => navigate('/admin/treks/add')}
             >

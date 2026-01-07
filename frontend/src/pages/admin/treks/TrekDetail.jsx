@@ -1,34 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { 
-  Card, 
-  Button, 
-  Tag, 
-  Tabs, 
-  Descriptions, 
-  Space, 
-  Typography, 
-  Image, 
-  Divider, 
+import {
+  Card,
+  Button,
+  Tag,
+  Tabs,
+  Descriptions,
+  Space,
+  Typography,
+  Image,
+  Divider,
   List,
   Badge,
   Alert,
   Skeleton,
   message,
-  Popconfirm
+  Popconfirm,
+  Row,
+  Col
 } from 'antd';
-import { 
-  EditOutlined, 
-  DeleteOutlined, 
-  ArrowLeftOutlined, 
-  CalendarOutlined, 
-  TeamOutlined, 
+import {
+  EditOutlined,
+  DeleteOutlined,
+  ArrowLeftOutlined,
+  CalendarOutlined,
+  TeamOutlined,
   EnvironmentOutlined,
   DollarOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
   InfoCircleOutlined
 } from '@ant-design/icons';
+import { adminService, IMAGE_BASE_URL } from '../../../services/adminApi';
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -43,74 +46,34 @@ const TrekDetail = () => {
   // Fetch trek data
   useEffect(() => {
     const fetchTrek = async () => {
+      setLoading(true);
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        // Mock data - replace with actual API call
-        const mockTrek = {
-          id,
-          title: 'Everest Base Camp Trek',
-          description: 'Experience the adventure of a lifetime with this classic trek to the base of the world\'s highest peak. This trek offers breathtaking views of the Himalayas, cultural experiences in Sherpa villages, and a sense of accomplishment that lasts a lifetime.',
-          region: 'Everest',
-          difficulty: 'Challenging',
-          duration: 14,
-          maxAltitude: 5545,
-          groupSize: 12,
-          bestSeason: ['Spring (Mar-May)', 'Autumn (Sep-Nov)'],
-          startPoint: 'Kathmandu',
-          endPoint: 'Lukla',
-          price: 1500,
-          discountPrice: 1400,
-          singleSupplement: 300,
-          deposit: 200,
-          status: 'published',
-          featured: true,
-          priceIncludes: [
-            'Airport transfers',
-            'Accommodation in tea houses',
-            'All meals during the trek',
-            'Experienced trekking guide',
-            'TIMS card and trekking permits',
-            'First aid kit',
-            'Farewell dinner'
-          ],
-          priceExcludes: [
-            'International flights',
-            'Travel insurance',
-            'Nepal visa fee',
-            'Personal expenses',
-            'Tips for guides and porters',
-            'Alcoholic beverages'
-          ],
-          accommodation: ['Tea House', 'Lodge'],
-          transportation: ['Flight', 'Private Vehicle'],
-          groupDiscount: true,
-          privateTrip: true,
-          images: [
-            'https://images.unsplash.com/photo-1580502304784-8985b7eb7260?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-            'https://images.unsplash.com/photo-1580706483919-2d6871a03b99?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-            'https://images.unsplash.com/photo-1580706483919-2d6871a03b99?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-          ],
-          itinerary: [
-            { day: 1, title: 'Arrival in Kathmandu', description: 'Arrive at Tribhuvan International Airport and transfer to your hotel. Briefing about the trek in the evening.' },
-            { day: 2, title: 'Fly to Lukla & Trek to Phakding', description: 'Early morning flight to Lukla (2,860m) and trek to Phakding (2,610m).' },
-            // Add more days as needed
-          ],
-          faqs: [
-            { question: 'What is the best time to do this trek?', answer: 'The best times are during spring (March to May) and autumn (September to November).' },
-            { question: 'How difficult is this trek?', answer: 'This trek is considered challenging but achievable for people with good physical condition.' },
-          ],
-          createdAt: '2025-01-15',
-          updatedAt: '2025-01-20',
-          bookings: 24,
-          rating: 4.8,
-        };
-        
-        setTrek(mockTrek);
+        const response = await adminService.getListingById(id);
+
+        if (response.success) {
+          const data = response.data;
+          // Map backend fields to frontend expectations if necessary
+          const mappedTrek = {
+            ...data,
+            images: data.gallery || [],
+            priceIncludes: data.includes || [],
+            priceExcludes: data.excludes || [],
+            bestSeason: Array.isArray(data.bestSeason) ? data.bestSeason : [],
+            itinerary: data.itinerary || [],
+            accommodation: Array.isArray(data.accommodation) ? data.accommodation : [],
+            transportation: Array.isArray(data.transportation) ? data.transportation : [],
+            // Set some defaults for missing fields in backend model
+            bookings: data.bookings || 0,
+            rating: typeof data.rating === 'number' ? data.rating : 0.0,
+            status: data.status || 'draft'
+          };
+          setTrek(mappedTrek);
+        } else {
+          message.error('Failed to load trek details');
+        }
       } catch (error) {
         console.error('Error fetching trek:', error);
-        message.error('Failed to load trek details');
+        message.error(typeof error === 'string' ? error : 'Failed to load trek details');
       } finally {
         setLoading(false);
       }
@@ -121,25 +84,29 @@ const TrekDetail = () => {
 
   const handleDelete = async () => {
     try {
-      // Handle delete logic
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await adminService.deleteListing(id);
       message.success('Trek deleted successfully');
       navigate('/admin/treks');
     } catch (error) {
       console.error('Error deleting trek:', error);
-      message.error('Failed to delete trek');
+      message.error(typeof error === 'string' ? error : 'Failed to delete trek');
     }
   };
 
   const handleStatusChange = async (newStatus) => {
     try {
-      // Handle status change logic
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setTrek({ ...trek, status: newStatus });
-      message.success(`Trek marked as ${newStatus}`);
+      // Use FormData if that's what the backend expects for updates
+      const formData = new FormData();
+      formData.append('status', newStatus);
+
+      const response = await adminService.updateListing(id, formData);
+      if (response.success) {
+        setTrek({ ...trek, status: newStatus });
+        message.success(`Trek marked as ${newStatus}`);
+      }
     } catch (error) {
       console.error('Error updating trek status:', error);
-      message.error('Failed to update trek status');
+      message.error(typeof error === 'string' ? error : 'Failed to update trek status');
     }
   };
 
@@ -166,15 +133,15 @@ const TrekDetail = () => {
   return (
     <div className="trek-detail">
       <div className="mb-6">
-        <Button 
-          type="text" 
-          icon={<ArrowLeftOutlined />} 
+        <Button
+          type="text"
+          icon={<ArrowLeftOutlined />}
           onClick={() => navigate('/admin/treks')}
           className="mb-4"
         >
           Back to Treks
         </Button>
-        
+
         <div className="flex flex-wrap justify-between items-center mb-6">
           <div>
             <div className="flex items-center gap-2">
@@ -188,16 +155,16 @@ const TrekDetail = () => {
               {trek.region} Region • {trek.difficulty} • {trek.duration} days
             </Text>
           </div>
-          
+
           <Space>
-            <Button 
-              type={trek.status === 'draft' ? 'primary' : 'default'} 
+            <Button
+              type={trek.status === 'draft' ? 'primary' : 'default'}
               onClick={() => handleStatusChange(trek.status === 'published' ? 'draft' : 'published')}
             >
               {trek.status === 'published' ? 'Unpublish' : 'Publish'}
             </Button>
-            <Button 
-              icon={<EditOutlined />} 
+            <Button
+              icon={<EditOutlined />}
               onClick={() => navigate(`/admin/treks/edit/${id}`)}
             >
               Edit
@@ -223,20 +190,26 @@ const TrekDetail = () => {
             <Col xs={24} lg={16}>
               <Card className="mb-6">
                 <div className="mb-6" style={{ borderRadius: '8px', overflow: 'hidden' }}>
-                  <Image
-                    src={trek.images[0]}
-                    alt={trek.title}
-                    className="w-full"
-                    style={{ maxHeight: '400px', objectFit: 'cover' }}
-                    preview={false}
-                  />
+                  {trek.images && trek.images.length > 0 ? (
+                    <Image
+                      src={trek.images[0].startsWith('http') ? trek.images[0] : `${IMAGE_BASE_URL}${trek.images[0]}`}
+                      alt={trek.title}
+                      className="w-full"
+                      style={{ maxHeight: '400px', objectFit: 'cover' }}
+                      preview={false}
+                    />
+                  ) : (
+                    <div className="w-full bg-gray-100 flex items-center justify-center" style={{ height: '400px' }}>
+                      <Text type="secondary">No image available</Text>
+                    </div>
+                  )}
                 </div>
-                
+
                 <Title level={4}>Description</Title>
                 <Paragraph>{trek.description}</Paragraph>
-                
+
                 <Divider />
-                
+
                 <Title level={4}>Quick Facts</Title>
                 <Descriptions bordered column={1} className="mb-6">
                   <Descriptions.Item label="Region">{trek.region} Region</Descriptions.Item>
@@ -261,9 +234,9 @@ const TrekDetail = () => {
                     {trek.transportation.join(', ')}
                   </Descriptions.Item>
                 </Descriptions>
-                
+
                 <Divider />
-                
+
                 <Title level={4}>Pricing</Title>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   <Card className="text-center">
@@ -282,7 +255,7 @@ const TrekDetail = () => {
                     <Title level={3} className="my-2">${trek.deposit}</Title>
                   </Card>
                 </div>
-                
+
                 <Row gutter={[24, 24]}>
                   <Col xs={24} md={12}>
                     <Card title="Price Includes" size="small">
@@ -315,10 +288,10 @@ const TrekDetail = () => {
                 </Row>
               </Card>
             </Col>
-            
+
             <Col xs={24} lg={8}>
-              <Card 
-                title="Trek Statistics" 
+              <Card
+                title="Trek Statistics"
                 className="mb-6"
                 extra={
                   <Tag color={trek.status === 'published' ? 'green' : 'orange'}>
@@ -331,8 +304,8 @@ const TrekDetail = () => {
                     <List.Item.Meta
                       title="Status"
                       description={
-                        <Badge 
-                          status={trek.status === 'published' ? 'success' : 'warning'} 
+                        <Badge
+                          status={trek.status === 'published' ? 'success' : 'warning'}
                           text={trek.status.charAt(0).toUpperCase() + trek.status.slice(1)}
                         />
                       }
@@ -368,37 +341,37 @@ const TrekDetail = () => {
                     />
                   </List.Item>
                 </List>
-                
+
                 <Divider />
-                
+
                 <div className="space-y-2">
-                  <Button 
-                    type="primary" 
-                    block 
+                  <Button
+                    type="primary"
+                    block
                     icon={<EditOutlined />}
                     onClick={() => navigate(`/admin/treks/edit/${id}`)}
                   >
                     Edit Trek Details
                   </Button>
-                  
+
                   {trek.status === 'published' ? (
-                    <Button 
-                      block 
+                    <Button
+                      block
                       onClick={() => handleStatusChange('draft')}
                     >
                       Unpublish Trek
                     </Button>
                   ) : (
-                    <Button 
-                      type="primary" 
-                      block 
+                    <Button
+                      type="primary"
+                      block
                       ghost
                       onClick={() => handleStatusChange('published')}
                     >
                       Publish Trek
                     </Button>
                   )}
-                  
+
                   <Popconfirm
                     title="Are you sure you want to delete this trek?"
                     onConfirm={handleDelete}
@@ -406,9 +379,9 @@ const TrekDetail = () => {
                     cancelText="No, keep it"
                     placement="top"
                   >
-                    <Button 
-                      danger 
-                      block 
+                    <Button
+                      danger
+                      block
                       icon={<DeleteOutlined />}
                     >
                       Delete Trek
@@ -416,9 +389,9 @@ const TrekDetail = () => {
                   </Popconfirm>
                 </div>
               </Card>
-              
-              <Card 
-                title="Quick Actions" 
+
+              <Card
+                title="Quick Actions"
                 className="mb-6"
               >
                 <div className="space-y-2">
@@ -428,17 +401,17 @@ const TrekDetail = () => {
                   <Button block>View on Website</Button>
                 </div>
               </Card>
-              
+
               <Card title="Gallery">
                 <div className="grid grid-cols-3 gap-2">
                   {trek.images.map((img, index) => (
                     <div key={index} className="aspect-square overflow-hidden rounded">
                       <Image
-                        src={img}
+                        src={img.startsWith('http') ? img : `${IMAGE_BASE_URL}${img}`}
                         alt={`${trek.title} ${index + 1}`}
                         className="w-full h-full object-cover"
                         preview={{
-                          src: img
+                          src: img.startsWith('http') ? img : `${IMAGE_BASE_URL}${img}`
                         }}
                       />
                     </div>
@@ -451,7 +424,7 @@ const TrekDetail = () => {
             </Col>
           </Row>
         </TabPane>
-        
+
         <TabPane tab="Itinerary" key="itinerary">
           <Card>
             <div className="mb-6">
@@ -461,7 +434,7 @@ const TrekDetail = () => {
                   Edit Itinerary
                 </Button>
               </div>
-              
+
               {trek.itinerary && trek.itinerary.length > 0 ? (
                 <div className="space-y-6">
                   {trek.itinerary.map((day, index) => (
@@ -489,7 +462,7 @@ const TrekDetail = () => {
             </div>
           </Card>
         </TabPane>
-        
+
         <TabPane tab="Bookings" key="bookings">
           <Card>
             <Alert
@@ -499,7 +472,7 @@ const TrekDetail = () => {
               showIcon
               className="mb-6"
             />
-            
+
             <div className="text-center py-8">
               <InfoCircleOutlined style={{ fontSize: '48px', color: '#1890ff', marginBottom: '16px' }} />
               <Title level={4}>No Bookings Yet</Title>
@@ -510,7 +483,7 @@ const TrekDetail = () => {
             </div>
           </Card>
         </TabPane>
-        
+
         <TabPane tab="Reviews" key="reviews">
           <Card>
             <div className="flex items-center justify-between mb-6">
@@ -532,7 +505,7 @@ const TrekDetail = () => {
                 </Text>
               </div>
             </div>
-            
+
             <div className="text-center py-12">
               <InfoCircleOutlined style={{ fontSize: '48px', color: '#1890ff', marginBottom: '16px' }} />
               <Title level={4}>No Reviews Yet</Title>
@@ -540,7 +513,7 @@ const TrekDetail = () => {
             </div>
           </Card>
         </TabPane>
-        
+
         <TabPane tab="FAQ" key="faq">
           <Card>
             <div className="flex justify-between items-center mb-6">
@@ -552,7 +525,7 @@ const TrekDetail = () => {
                 Edit FAQ
               </Button>
             </div>
-            
+
             {trek.faqs && trek.faqs.length > 0 ? (
               <div className="space-y-4">
                 {trek.faqs.map((faq, index) => (
