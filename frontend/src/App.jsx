@@ -70,6 +70,7 @@ function MainLayout() {
             <Route path="custom-requests" element={<CustomRequestList />} />
             <Route path="treks" element={<TreksList />} />
             <Route path="treks/add" element={<AddTrek />} />
+            <Route path="treks/view/:id" element={<TrekDetailAdmin />} />
             <Route path="treks/:id" element={<TrekDetailAdmin />} />
             <Route path="treks/edit/:id" element={<EditTrek />} />
             <Route path="users" element={<UsersList />} />

@@ -135,7 +135,7 @@ const TreksList = () => {
       dataIndex: 'title',
       key: 'title',
       render: (text, record) => (
-        <Link to={`/admin/treks/${record._id}`} className="font-medium">
+        <Link to={`/admin/treks/view/${record._id}`} className="font-medium">
           {text}
         </Link>
       ),
@@ -194,7 +194,7 @@ const TreksList = () => {
       render: (_, record) => (
         <Space size="middle">
           <Tooltip title="View Details">
-            <Link to={`/admin/treks/${record._id}`}>
+            <Link to={`/admin/treks/view/${record._id}`}>
               <Button type="text" icon={<EyeOutlined />} />
             </Link>
           </Tooltip>

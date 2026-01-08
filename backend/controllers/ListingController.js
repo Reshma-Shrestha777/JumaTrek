@@ -89,24 +89,89 @@ export const createListing = async (req, res) => {
 export const updateListing = async (req, res) => {
     try {
         const listingId = req.params.id;
-        const updateData = req.body;
+        const updateData = { ...req.body };
 
-        
+        // Remove immutable fields
         delete updateData._id;
         delete updateData.createdAt;
         delete updateData.updatedAt;
 
-        
+        // Parse itinerary if it's a string (from FormData)
+        if (updateData.itinerary && typeof updateData.itinerary === 'string') {
+            try {
+                updateData.itinerary = JSON.parse(updateData.itinerary);
+            } catch (parseError) {
+                console.error("Error parsing itinerary:", parseError);
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid itinerary format",
+                    error: "Itinerary must be a valid JSON array"
+                });
+            }
+        }
+
+        // Handle array fields that might come as strings or need to be arrays
+        const arrayFields = ['bestSeason', 'highlights', 'includes', 'excludes'];
+        arrayFields.forEach(field => {
+            if (updateData[field]) {
+                if (Array.isArray(updateData[field])) {
+                    return;
+                }
+                if (typeof updateData[field] === 'string') {
+                    try {
+                        updateData[field] = JSON.parse(updateData[field]);
+                    } catch (e) {
+                        updateData[field] = [updateData[field]];
+                    }
+                }
+            }
+        });
+
+        // Handle numeric fields
+        if (updateData.price) updateData.price = Number(updateData.price);
+        if (updateData.duration) updateData.duration = Number(updateData.duration);
+
         const updateOperations = {};
 
-        
+        // Handle images to remove
+        if (updateData.imagesToRemove) {
+            let imagesToRemove = updateData.imagesToRemove;
+            if (typeof imagesToRemove === 'string') {
+                try {
+                    imagesToRemove = JSON.parse(imagesToRemove);
+                } catch (e) {
+                    imagesToRemove = [imagesToRemove];
+                }
+            }
+            if (Array.isArray(imagesToRemove) && imagesToRemove.length > 0) {
+                // Remove base URL if present to get relative path saved in DB
+                const pathsInDb = imagesToRemove.map(img => {
+                    if (typeof img !== 'string') return img;
+                    // If it's a full URL, we need the part after the base URL
+                    if (img.startsWith('http')) {
+                        // Assuming the path in DB is like 'uploads/abc.jpg'
+                        const parts = img.split('/uploads/');
+                        return parts.length > 1 ? `uploads/${parts[1]}` : img;
+                    }
+                    return img;
+                });
+                updateOperations.$pull = { gallery: { $in: pathsInDb } };
+            }
+            delete updateData.imagesToRemove;
+        }
+
+        // Handle new images
         if (req.files && req.files.length > 0) {
             const newImages = req.files.map(file => file.path);
             updateOperations.$push = { gallery: { $each: newImages } };
         }
 
-        
         const setFields = { ...updateData };
+        // Avoid path conflicts by removing gallery and other image fields from $set
+        delete setFields.gallery;
+        delete setFields.images;
+        delete setFields.featuredImage;
+
         if (Object.keys(setFields).length > 0) {
             updateOperations.$set = setFields;
         }
@@ -114,9 +179,9 @@ export const updateListing = async (req, res) => {
         const updatedListing = await Listing.findByIdAndUpdate(
             listingId,
             updateOperations,
-            { 
-                new: true, 
-                runValidators: true 
+            {
+                new: true,
+                runValidators: true
             }
         );
 
@@ -241,7 +306,7 @@ export const getAllListings = async (req, res) => {
         });
     }
 };
-        
+
 
 export const getListingById = async (req, res) => {
     try {
