@@ -31,7 +31,7 @@ const FAQ = () => {
   };
 
   return (
-    <section className="section">
+    <section id="faq" className="py-16">
       <div className="section-header">
         <h2 className="section-title">Trekking FAQs</h2>
         <p className="section-subtitle">Answers to common questions about trekking in Nepal</p>

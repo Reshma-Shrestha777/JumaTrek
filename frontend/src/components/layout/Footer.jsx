@@ -44,11 +44,11 @@ const Footer = () => {
           <div className="footer-column">
             <h4 className="footer-title">Popular Treks</h4>
             <ul className="footer-links">
-              <li><Link to="/trek/everest">Everest Base Camp</Link></li>
-              <li><Link to="/trek/annapurna">Annapurna Circuit</Link></li>
-              <li><Link to="/trek/langtang">Langtang Valley</Link></li>
-              <li><Link to="/trek/manaslu">Manaslu Circuit</Link></li>
-              <li><Link to="/trek/mustang">Upper Mustang</Link></li>
+              <li><Link to="/trek/1">Everest Base Camp</Link></li>
+              <li><Link to="/trek/2">Annapurna Circuit</Link></li>
+              <li><Link to="/trek/3">Langtang Valley</Link></li>
+              <li><Link to="/trek/4">Manaslu Circuit</Link></li>
+              <li><Link to="/trek/5">Upper Mustang</Link></li>
               <li><Link to="/all-treks" className="view-all">View All Treks →</Link></li>
             </ul>
           </div>
@@ -58,9 +58,7 @@ const Footer = () => {
             <h4 className="footer-title">Company</h4>
             <ul className="footer-links">
               <li><a href="/about">About Us</a></li>
-              <li><a href="/team">Our Team</a></li>
               <li><a href="/guides">Our Guides</a></li>
-              <li><a href="/careers">Careers</a></li>
               <li><a href="/blog">Blog</a></li>
               
             </ul>
@@ -71,11 +69,19 @@ const Footer = () => {
             <h4 className="footer-title">Support</h4>
             <ul className="footer-links">
               <li><Link to="/contact">Contact Us</Link></li>
-              <li><a href="#faq">FAQ</a></li>
-              <li><a href="#booking-guide">Booking Guide</a></li>
-              <li><a href="#packing-list">Packing Lists</a></li>
-              <li><a href="#travel-tips">Travel Tips</a></li>
-              <li><a href="#terms">Terms & Conditions</a></li>
+              <li><Link to="/#faq" onClick={(e) => {
+                // If we're already on the home page, scroll to the FAQ section
+                if (window.location.pathname === '/') {
+                  e.preventDefault();
+                  const element = document.getElementById('faq');
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }
+              }}>FAQ</Link></li>
+              <li><Link to="/packing-lists">Packing Lists</Link></li>
+              <li><Link to="/travel-tips">Travel Tips</Link></li>
+              <li><Link to="/terms">Terms & Conditions</Link></li>
             </ul>
           </div>
 
