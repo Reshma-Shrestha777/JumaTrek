@@ -2,6 +2,7 @@ import User from "../model/UserModel.js";
 import Booking from "../model/BookingModel.js";
 import Listing from "../model/ListingModel.js";
 import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
 import genToken from "../config/token.js";
 
 export const getAllUsers = async (req, res) => {
@@ -52,11 +53,25 @@ export const getAllBookings = async (req, res) => {
     try {
         const bookings = await Booking.find({})
             .populate("user", "name email contact")
+            .populate("trek", "title")
             .sort({ createdAt: -1 });
+
+        // Resolve trek IDs to titles for admin display if trekName is an ID and trek ref is missing
+        const enrichedBookings = await Promise.all(bookings.map(async (booking) => {
+            const bookingObj = booking.toObject();
+            if (!bookingObj.trek && mongoose.Types.ObjectId.isValid(booking.trekName)) {
+                const trek = await Listing.findById(booking.trekName).select('title');
+                if (trek) {
+                    bookingObj.trekPopulated = { title: trek.title };
+                }
+            }
+            return bookingObj;
+        }));
+
         res.status(200).json({
             success: true,
-            count: bookings.length,
-            data: bookings
+            count: enrichedBookings.length,
+            data: enrichedBookings
         });
     } catch (error) {
         console.error("Error fetching bookings:", error);
@@ -82,7 +97,7 @@ export const updateBookingStatusAdmin = async (req, res) => {
             id,
             { status },
             { new: true }
-        ).populate("user", "name email contact");
+        ).populate("user", "name email contact").populate("trek", "title");
 
         if (!booking) {
             return res.status(404).json({ success: false, message: "Booking not found" });
@@ -98,6 +113,32 @@ export const updateBookingStatusAdmin = async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Failed to update booking status",
+            error: error.message
+        });
+    }
+};
+
+export const deleteBookingAdmin = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const booking = await Booking.findByIdAndDelete(id);
+
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                message: "Booking not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Booking deleted successfully"
+        });
+    } catch (error) {
+        console.error("Error deleting booking:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to delete booking",
             error: error.message
         });
     }

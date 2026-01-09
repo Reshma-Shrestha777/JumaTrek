@@ -75,6 +75,12 @@ const CustomTripSchema = new Schema(
             default: "pending",
         },
         adminNotes: String,
+        lastReply: {
+            text: String,
+            sentAt: Date,
+            adminEmail: String,
+            adminName: String,
+        },
     },
     { timestamps: true }
 );

@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Table, Card, Tag, Button, Modal, Descriptions, Space, Tooltip, Badge, message, Select } from 'antd';
+import { Table, Card, Tag, Button, Modal, Descriptions, Space, Tooltip, Badge, message, Select, Input, Form } from 'antd';
 import {
     EyeOutlined,
     CheckCircleOutlined,
@@ -13,10 +13,13 @@ import {
     DollarOutlined,
     CarOutlined,
     HomeOutlined,
-    ReloadOutlined
+    ReloadOutlined,
+    DeleteOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { adminService } from '../../../services/adminApi';
+
+const { TextArea } = Input;
 
 const CustomRequestList = () => {
     const [requests, setRequests] = useState([]);
@@ -25,6 +28,22 @@ const CustomRequestList = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [updatingId, setUpdatingId] = useState(null);
+    const [replyForm] = Form.useForm();
+    const [replying, setReplying] = useState(false);
+
+    const destinationLabels = {
+        'everest_base_camp': 'Everest Base Camp',
+        'annapurna_circuit': 'Annapurna Circuit',
+        'langtang_valley': 'Langtang Valley',
+        'manaslu_circuit': 'Manaslu Circuit',
+        'upper_mustang': 'Upper Mustang',
+        'annapurna_base_camp': 'Annapurna Base Camp',
+        'ghorepani_poonhill': 'Ghorepani Poon Hill',
+        'kanchenjunga': 'Kanchenjunga Base Camp',
+        'makalu_base_camp': 'Makalu Base Camp',
+        'rolwaling_valley': 'Rolwaling Valley',
+        'custom': 'Custom Route'
+    };
 
     const statusColors = {
         pending: 'default',
@@ -82,9 +101,11 @@ const CustomRequestList = () => {
             render: (_, record) => (
                 <span>
                     <EnvironmentOutlined style={{ marginRight: 6, color: '#1890ff' }} />
-                    {record.destination === 'custom_route' || record.destination === 'custom'
-                        ? record.customDestination || 'Custom Route'
-                        : record.customDestination || record.destination}
+                    {record.destinationName || (
+                        record.destination === 'custom_route' || record.destination === 'custom'
+                            ? record.customDestination || 'Custom Route'
+                            : destinationLabels[record.destination] || record.destination
+                    )}
                 </span>
             ),
         },
@@ -156,12 +177,12 @@ const CustomRequestList = () => {
                     >
                         View
                     </Button>
-                    <Tooltip title="Mark as reviewed">
+                    <Tooltip title="Delete request">
                         <Button
                             size="small"
-                            icon={<CheckCircleOutlined />}
-                            loading={updatingId === record._id}
-                            onClick={() => updateStatus(record._id, 'reviewed')}
+                            danger
+                            icon={<DeleteOutlined />}
+                            onClick={() => handleDelete(record._id)}
                         />
                     </Tooltip>
                 </Space>
@@ -188,6 +209,44 @@ const CustomRequestList = () => {
             message.error(error || 'Failed to update status');
         } finally {
             setUpdatingId(null);
+        }
+    };
+
+    const handleDelete = (id) => {
+        Modal.confirm({
+            title: 'Are you sure you want to delete this request?',
+            content: 'This action cannot be undone.',
+            okText: 'Yes, Delete',
+            okType: 'danger',
+            cancelText: 'No',
+            async onOk() {
+                try {
+                    await adminService.deleteCustomTrip(id);
+                    message.success('Request deleted successfully');
+                    fetchRequests();
+                    if (selectedRequest?._id === id) {
+                        setIsModalVisible(false);
+                    }
+                } catch (error) {
+                    message.error(error || 'Failed to delete request');
+                }
+            },
+        });
+    };
+
+    const handleReply = async (values) => {
+        if (!selectedRequest?._id) return;
+        setReplying(true);
+        try {
+            await adminService.replyToCustomTrip(selectedRequest._id, values.replyMessage);
+            message.success('Reply sent successfully');
+            replyForm.resetFields();
+            setIsModalVisible(false);
+            fetchRequests();
+        } catch (error) {
+            message.error(error || 'Failed to send reply');
+        } finally {
+            setReplying(false);
         }
     };
 
@@ -280,9 +339,11 @@ const CustomRequestList = () => {
                         {/* Trip Details Section */}
                         <Descriptions title="Trip Specifications" bordered column={2} size="small">
                             <Descriptions.Item label="Destination">
-                                {selectedRequest.destination === 'custom_route' || selectedRequest.destination === 'custom'
-                                    ? selectedRequest.customDestination || 'Custom Route'
-                                    : selectedRequest.customDestination || selectedRequest.destination}
+                                {selectedRequest.destinationName || (
+                                    selectedRequest.destination === 'custom_route' || selectedRequest.destination === 'custom'
+                                        ? selectedRequest.customDestination || 'Custom Route'
+                                        : selectedRequest.customDestination || selectedRequest.destination
+                                )}
                             </Descriptions.Item>
                             <Descriptions.Item label="Dates">
                                 {selectedRequest.startDate ? dayjs(selectedRequest.startDate).format('YYYY-MM-DD') : '—'} ({selectedRequest.duration || 0} Days)
@@ -322,6 +383,38 @@ const CustomRequestList = () => {
                                 <p style={{ margin: 0 }}>{selectedRequest.specialRequests}</p>
                             </Card>
                         )}
+
+                        {/* Previous Reply */}
+                        {selectedRequest.status === 'replied' && selectedRequest.lastReply && (
+                            <Card type="inner" title={<Space><MailOutlined /> Last Reply</Space>} size="small" headStyle={{ color: '#52c41a' }}>
+                                <p style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{selectedRequest.lastReply.text}</p>
+                                <div style={{ textAlign: 'right', fontSize: '11px', color: '#999', marginTop: '8px' }}>
+                                    Sent by {selectedRequest.lastReply.adminName} on {dayjs(selectedRequest.lastReply.sentAt).format('YYYY-MM-DD HH:mm')}
+                                </div>
+                            </Card>
+                        )}
+
+                        {/* Reply Form */}
+                        <Card type="inner" title="Reply to Client" size="small">
+                            <Form
+                                form={replyForm}
+                                layout="vertical"
+                                onFinish={handleReply}
+                            >
+                                <Form.Item
+                                    name="replyMessage"
+                                    required
+                                    rules={[{ required: true, message: 'Please enter your reply message' }]}
+                                >
+                                    <TextArea rows={4} placeholder="Type your response to the client here..." />
+                                </Form.Item>
+                                <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+                                    <Button type="primary" htmlType="submit" loading={replying} icon={<MailOutlined />}>
+                                        Send Email Reply
+                                    </Button>
+                                </Form.Item>
+                            </Form>
+                        </Card>
 
                         <div style={{ textAlign: 'right', color: '#999', fontSize: '12px' }}>
                             Submitted on: {selectedRequest.createdAt ? dayjs(selectedRequest.createdAt).format('YYYY-MM-DD HH:mm') : '—'}

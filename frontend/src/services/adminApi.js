@@ -121,6 +121,15 @@ export const adminService = {
         }
     },
 
+    async deleteBooking(bookingId) {
+        try {
+            const response = await adminApi.delete(`/bookings/${bookingId}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data?.message || 'Failed to delete booking';
+        }
+    },
+
     // Listings/Treks
     async getAllListings(params = {}) {
         try {
@@ -311,6 +320,24 @@ export const adminService = {
             return response.data;
         } catch (error) {
             throw error.response?.data?.message || 'Failed to update custom trip request';
+        }
+    },
+
+    async replyToCustomTrip(id, replyMessage) {
+        try {
+            const response = await adminApi.post(`/custom-trips/${id}/reply`, { replyMessage });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data?.message || 'Failed to send reply';
+        }
+    },
+
+    async deleteCustomTrip(id) {
+        try {
+            const response = await adminApi.delete(`/custom-trips/${id}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data?.message || 'Failed to delete custom trip request';
         }
     },
 
