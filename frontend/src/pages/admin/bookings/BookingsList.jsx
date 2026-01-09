@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Tag, Input, Select, Card, message, Modal, Form, Row, Col, Statistic, DatePicker, Empty } from 'antd';
-import { CalendarOutlined, EyeOutlined, SearchOutlined, ReloadOutlined, EditOutlined, UserOutlined, TeamOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { CalendarOutlined, EyeOutlined, SearchOutlined, ReloadOutlined, EditOutlined, UserOutlined, TeamOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { adminService } from '../../../services/adminApi';
 
@@ -52,6 +52,8 @@ const BookingsList = () => {
             filtered = filtered.filter(
                 (booking) =>
                     booking.trekName?.toLowerCase().includes(searchLower) ||
+                    booking.trek?.title?.toLowerCase().includes(searchLower) ||
+                    booking.trekPopulated?.title?.toLowerCase().includes(searchLower) ||
                     booking.name?.toLowerCase().includes(searchLower) ||
                     booking.email?.toLowerCase().includes(searchLower) ||
                     booking._id?.toLowerCase().includes(searchLower)
@@ -67,8 +69,8 @@ const BookingsList = () => {
         if (filters.dateRange && filters.dateRange[0] && filters.dateRange[1]) {
             filtered = filtered.filter(booking => {
                 const bookingDate = dayjs(booking.preferredDate);
-                return bookingDate.isAfter(filters.dateRange[0]) && 
-                       bookingDate.isBefore(filters.dateRange[1].add(1, 'day'));
+                return bookingDate.isAfter(filters.dateRange[0]) &&
+                    bookingDate.isBefore(filters.dateRange[1].add(1, 'day'));
             });
         }
 
@@ -94,6 +96,27 @@ const BookingsList = () => {
         }
     };
 
+    const handleDelete = (id) => {
+        Modal.confirm({
+            title: 'Are you sure you want to delete this booking?',
+            content: 'This action cannot be undone.',
+            okText: 'Yes, Delete',
+            okType: 'danger',
+            cancelText: 'No',
+            async onOk() {
+                try {
+                    const response = await adminService.deleteBooking(id);
+                    if (response.success) {
+                        message.success('Booking deleted successfully');
+                        fetchBookings();
+                    }
+                } catch (error) {
+                    message.error(error || 'Failed to delete booking');
+                }
+            },
+        });
+    };
+
     const handleViewDetails = (booking) => {
         Modal.info({
             title: 'Booking Details',
@@ -101,7 +124,7 @@ const BookingsList = () => {
             content: (
                 <div style={{ marginTop: 16 }}>
                     <h4>Trek Information</h4>
-                    <p><strong>Trek:</strong> {booking.trekName}</p>
+                    <p><strong>Trek:</strong> {booking.trek?.title || booking.trekPopulated?.title || booking.trekName}</p>
                     <p><strong>Preferred Date:</strong> {new Date(booking.preferredDate).toLocaleDateString()}</p>
                     <p><strong>Group Size:</strong> {booking.groupSize} people</p>
                     <p><strong>Total Price:</strong> ${booking.totalPrice || 'N/A'}</p>
@@ -152,9 +175,9 @@ const BookingsList = () => {
         },
         {
             title: 'Trek',
-            dataIndex: 'trekName',
             key: 'trekName',
-            sorter: (a, b) => a.trekName?.localeCompare(b.trekName),
+            sorter: (a, b) => (a.trek?.title || a.trekPopulated?.title || a.trekName || '').localeCompare(b.trek?.title || b.trekPopulated?.title || b.trekName || ''),
+            render: (_, record) => record.trek?.title || record.trekPopulated?.title || record.trekName,
             ellipsis: true,
             width: 150,
         },
@@ -209,13 +232,13 @@ const BookingsList = () => {
             ],
             onFilter: (value, record) => record.status === value,
             render: (status) => (
-                <Tag 
+                <Tag
                     color={getStatusColor(status)}
                     icon={
                         status === 'confirmed' ? <CheckCircleOutlined /> :
-                        status === 'cancelled' ? <CloseCircleOutlined /> :
-                        status === 'completed' ? <CheckCircleOutlined /> :
-                        <ClockCircleOutlined />
+                            status === 'cancelled' ? <CloseCircleOutlined /> :
+                                status === 'completed' ? <CheckCircleOutlined /> :
+                                    <ClockCircleOutlined />
                     }
                 >
                     {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -242,6 +265,13 @@ const BookingsList = () => {
                         onClick={() => handleStatusUpdate(record)}
                         title="Update Status"
                     />
+                    <Button
+                        type="text"
+                        danger
+                        icon={<DeleteOutlined />}
+                        onClick={() => handleDelete(record._id)}
+                        title="Delete Booking"
+                    />
                 </Space>
             ),
         },
@@ -266,7 +296,7 @@ const BookingsList = () => {
             </div>
 
 
-            <Card 
+            <Card
                 title={
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span>Booking List</span>
@@ -316,7 +346,7 @@ const BookingsList = () => {
                             />
                         </Col>
                         <Col xs={24} sm={24} md={8} lg={4} style={{ textAlign: 'right' }}>
-                            <Button 
+                            <Button
                                 onClick={() => setFilters({ search: '', status: 'all', dateRange: null })}
                                 disabled={!filters.search && filters.status === 'all' && !filters.dateRange}
                             >
@@ -357,7 +387,7 @@ const BookingsList = () => {
                         ),
                     }}
                     rowClassName={(record) => `status-${record.status}`}
-                    style={{ 
+                    style={{
                         borderTop: '1px solid #f0f0f0',
                         borderRadius: '0 0 8px 8px'
                     }}

@@ -1,13 +1,13 @@
 import express from 'express';
 import isAdmin from '../middleware/isAdmin.js';
-import { deleteUser, getAllBookings, getAllUsers, getDashboardStats, updateBookingStatusAdmin, adminLogin } from '../controllers/AdminController.js';
+import { deleteUser, getAllBookings, getAllUsers, getDashboardStats, updateBookingStatusAdmin, adminLogin, deleteBookingAdmin } from '../controllers/AdminController.js';
 import { createListing, deleteListing, getAllListings, getListingById, updateListing, updateListingGallery } from '../controllers/ListingController.js';
 import { getAllGuides, createGuide, updateGuide, deleteGuide } from '../controllers/GuideController.js';
 import { getAllBlogs, getBlogById, createBlog, updateBlog, deleteBlog } from '../controllers/BlogController.js';
 import { getAllInquiries, getInquiryById, updateInquiryStatus, replyToInquiry, deleteInquiry } from '../controllers/InquiryController.js';
 import upload from '../middleware/multer.js';
 import { validateListingFilters } from '../middleware/validation.js';
-import { getAllCustomTripsAdmin, getCustomTripByIdAdmin, updateCustomTripStatusAdmin } from '../controllers/CustomTripController.js';
+import { getAllCustomTripsAdmin, getCustomTripByIdAdmin, updateCustomTripStatusAdmin, deleteCustomTripAdmin, replyToCustomTripAdmin } from '../controllers/CustomTripController.js';
 
 const adminRouter = express.Router();
 
@@ -20,17 +20,21 @@ adminRouter.delete("/users/:id", isAdmin, deleteUser);
 
 adminRouter.get("/bookings", isAdmin, getAllBookings);
 adminRouter.patch("/bookings/:id/status", isAdmin, updateBookingStatusAdmin);
+adminRouter.delete("/bookings/:id", isAdmin, deleteBookingAdmin);
+
 
 // Custom trip requests
 adminRouter.get("/custom-trips", isAdmin, getAllCustomTripsAdmin);
 adminRouter.get("/custom-trips/:id", isAdmin, getCustomTripByIdAdmin);
 adminRouter.patch("/custom-trips/:id/status", isAdmin, updateCustomTripStatusAdmin);
+adminRouter.post("/custom-trips/:id/reply", isAdmin, replyToCustomTripAdmin);
+adminRouter.delete("/custom-trips/:id", isAdmin, deleteCustomTripAdmin);
 
-adminRouter.post("/listing", isAdmin, upload.array("images",10), createListing);
+adminRouter.post("/listing", isAdmin, upload.array("images", 10), createListing);
 adminRouter.get("/listing", isAdmin, validateListingFilters, getAllListings);
 // adminRouter.get("/listing", isAdmin, getAllListings);
 adminRouter.get("/listing/:id", isAdmin, getListingById);
-adminRouter.put("/listing/:id", isAdmin, upload.array("images",10),  updateListing);
+adminRouter.put("/listing/:id", isAdmin, upload.array("images", 10), updateListing);
 adminRouter.delete("/listing/:id", isAdmin, deleteListing);
 
 // Guides management
