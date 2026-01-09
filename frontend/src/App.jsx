@@ -19,7 +19,6 @@ import AboutPage from './pages/AboutPage';
 import GuidesPage from './pages/GuidesPage';
 import ContactPage from './pages/ContactPage';
 import BlogPage from './pages/BlogPage';
-import TrekQuiz from './pages/quiz/TrekQuiz';
 import GuideDetails from './pages/GuideDetails';
 
 // Admin components
@@ -32,6 +31,9 @@ import EditTrek from './pages/admin/treks/EditTrek';
 import TrekDetailAdmin from './pages/admin/treks/TrekDetail';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import CustomTrip from './pages/CustomTrip';
+import PackingListPage from './pages/PackingListPage';
+import TravelTipsPage from './pages/TravelTipsPage';
+import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
 
 // New Admin Pages
 import UsersList from './pages/admin/users/UsersList';
@@ -120,8 +122,10 @@ function MainLayout() {
           <Route path="/trek/:id" element={<TrekDetail />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/auth" element={<AuthPage />} />
-          <Route path="/quiz" element={<TrekQuiz />} />
           <Route path="/custom-trip" element={<CustomTrip />} />
+          <Route path="/packing-lists" element={<PackingListPage />} />
+          <Route path="/travel-tips" element={<TravelTipsPage />} />
+          <Route path="/terms" element={<TermsAndConditionsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
