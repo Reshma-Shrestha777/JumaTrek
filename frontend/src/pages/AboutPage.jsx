@@ -1,16 +1,6 @@
 import React from 'react';
 
 const AboutPage = () => {
-    const learnMore = () => {
-        console.log('Opening team page...');
-        // This would typically navigate to a team page
-    };
-
-    const viewCertifications = () => {
-        console.log('Viewing certifications...');
-        // This would typically open a modal or navigate to certifications page
-    };
-
     return (
         <div style={{ padding: '2rem 4rem', minHeight: '100vh' }}>
             <section id="about" className="section" style={{ paddingTop: '20px' }}>
@@ -39,15 +29,6 @@ const AboutPage = () => {
                                 <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--brand)' }}>24/7</div>
                                 <div style={{ color: 'var(--muted)', fontSize: '14px' }}>Support</div>
                             </div>
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '16px' }}>
-                            <button className="btn" onClick={learnMore}>
-                                <i className="fas fa-users"></i> Meet Our Team
-                            </button>
-                            <button className="btn" onClick={viewCertifications} style={{ background: 'white', color: 'var(--brand)', border: '1px solid var(--brand)' }}>
-                                <i className="fas fa-certificate"></i> Certifications
-                            </button>
                         </div>
                     </div>
 
